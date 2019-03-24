@@ -1,0 +1,30 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "antlr-debug",
+      "request": "launch",
+      "name": "Debug Current Grammar",
+      "input": "src/FirestoreRules.g4",
+      "visualParseTree": true
+    },
+    
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug TypeScript in Node.js",
+      "preLaunchTask": "Build script",
+      "program": "${workspaceFolder}/lib/index.js",
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}",
+      "protocol": "inspector",
+      "outFiles": [
+        "${workspaceFolder}/bin/**/*.js"
+      ]
+    }
+  ]
+}

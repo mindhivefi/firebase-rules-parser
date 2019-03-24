@@ -1,0 +1,72 @@
+#  Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:8.9.4
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: npm install
+      - run:
+          name: Run build
+          command: yarn build
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Run Tests
+          command: npm test
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Run build
+          command: yarn build
+      - run:
+          name: Evaluate the package content
+          command: yarn check-package
+      - run:
+          name: List directory
+          command: yarn dir
+      - run:
+          name: Publish package
+          command: npx semantic-release --gh-token=$GITHUB_TOKEN --npm-token=$npm_TOKEN --gh-username=mindhivefi --npm-username=villevenalainen
+workflows:
+  version: 2
+  deploy-master-to-npm:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
