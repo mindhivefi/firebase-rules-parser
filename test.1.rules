@@ -1,0 +1,49 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow the user to access documents in the "organization" collection
+    // only if they are authenticated.
+    match /organizations/{oid} {
+          
+      function isUserInOrganization() {
+        return request.auth.uid != null && (get(/databases/$(database)/documents/organizations/$(oid)).data.roles[request.auth.uid] == 'u' || get(/databases/$(database)/documents/organizations/$(oid)).data.roles[request.auth.uid] == 'a');
+      }
+      function isAdminInOrganization() {
+        return request.auth.uid != null && get(/databases/$(database)/documents/organizations/$(oid)).data.roles[request.auth.uid] == 'a';
+      }
+  
+      // If user is in organization's role set with user or admin role, user can read organization info
+      allow read: if isUserInOrganization();
+      // If user is in organization's role set with admin role, user can update organization info
+      allow update: if isAdminInOrganization();
+      // Only system admins can create new organizations
+      allow create: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemAdmin == true;
+      // No organization can be deleted from software itself
+      allow delete: if false;
+      
+      // admins have the access to bots
+      match /bots/{document=**} {
+         allow read, write: if isAdminInOrganization();
+      }
+      
+      // admins can monitor chat session
+      match /chat-sessions/{document=**} {
+         allow read, write: if isAdminInOrganization();
+      }
+
+    }
+    match /pending-users/{email} {
+      // pending users are always handled by the backend 
+    	allow read, write, update, create: if false;
+    }
+    // User data access
+    match /users/{uid} {
+      // Users can only read and update their own user data
+      allow read, write, create: if request.auth.uid != null && request.auth.uid == uid;
+    }
+    
+    // email check can only be done on server side
+    match /user-emails/{email} {
+      allow read, write: if false;
+    }
+  }
+}

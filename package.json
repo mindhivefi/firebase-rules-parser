@@ -17,7 +17,7 @@
     "deploy": "npm deploy",
     "commit": "npx git-cz",
     "check-package": "tar tvf $(npm pack)",
-    "generate": "antlr4ts -visitor ./src/FirestoreRules.g4 && yarn lint && yarn build"
+    "generate": "antlr4-tool -o ./src/parser ./src/FirebaseRules.g4 && yarn lint && yarn build"
   },
   "repository": {
     "type": "git",
@@ -63,7 +63,9 @@
     "@semantic-release/changelog": "3.0.2",
     "@semantic-release/git": "7.0.8",
     "@semantic-release/npm": "5.1.4",
+    "@types/antlr4": "4.7.0",
     "@types/jest": "24.0.11",
+    "antlr4-tool": "1.0.26",
     "antlr4ts-cli": "0.5.0-alpha.3",
     "commitizen": "3.0.7",
     "condition-circle": "2.0.2",
@@ -93,7 +95,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "antlr4": "4.7.2",
-    "antlr4ts": "0.5.0-alpha.3"
+    "antlr4": "4.7.2"
   }
 }
