@@ -1,8 +1,8 @@
-import { ANTLRInputStream, CharStreams, CommonTokenStream } from 'antlr4ts';
+import { CommonTokenStream, InputStream } from 'antlr4';
 import * as fs from 'fs';
 
-import { FirebaseRulesLexer } from './FirebaseRulesLexer';
-import { FirebaseRulesParser } from './FirebaseRulesParser';
+import { FirebaseRulesLexer } from './parser/FirebaseRulesLexer';
+import { FirebaseRulesParser } from './parser/FirebaseRulesParser';
 
 /**
  * Parse firebase rules from file
@@ -18,7 +18,7 @@ export function parseFirebaseRulesFromFile(fileName: string): FirebaseRulesParse
  * @param rules Inmemory file containing rules-file
  */
 export function parseFirebaseRulesFromString(rules: string): FirebaseRulesParser {
-  const inputStream = new ANTLRInputStream(rules);
+  const inputStream = new InputStream(rules);
   const lexer = new FirebaseRulesLexer(inputStream);
   const tokenStream = new CommonTokenStream(lexer);
   return new FirebaseRulesParser(tokenStream);

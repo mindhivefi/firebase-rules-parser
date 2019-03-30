@@ -10,82 +10,114 @@ namespace: Identifier | ObjectReference;
 /**
  * Namespace block can only contain matchers, functions and comments
  */
-namespaceBlock: '{' (matcher | Comment | function)* '}';
+namespaceBlock:
+	CurlyOpen (matcher | comment | functionDeclaration)* CurlyClose;
 
-matchBlock: '{' (allow | matcher | Comment | function)* '}';
+matchBlock:
+	CurlyOpen (allow | matcher | Comment | functionDeclaration)* CurlyClose;
 
 allowKey: (Read | Write | Update | Delete | Create | List | Get);
 
+comment: Comment;
 /**
  * Path matcher, can be:fragment /collection/doc/sub/ /collection/{doc}/ /collection/{doc=**}/
  * /collection/{doc=path*}/
  */
 matcher: Match matchPath matchBlock;
 
-allow: Allow allowKey (',' allowKey)* (':' If expression)? ';';
+allow:
+	Allow allowKey (Comma allowKey)* (Colon If expression)? Semicolon;
 
 pathVariableReplace:
 	'$(' (Identifier | String | Number | ObjectReference) ')';
 
-pathVariable: '{' Identifier ('=' '**')? '}';
+pathVariable: CurlyOpen Identifier ('=' '**')? CurlyClose;
 
 arguments: Identifier? (',' Identifier)*;
 
-function:
-	Function Identifier '(' arguments ')' '{' Return expression ';' '}';
+functionDeclaration:
+	Function Identifier BracketOpen arguments BracketClose CurlyOpen Return expression ';'
+		CurlyClose;
 
 expression:
-	nullValue
-	| expression compareOperator expression
-	| expression logicalOperator expression
-	| expression binaryOperator expression
-	| expression arithmeticOperator expression
-	| unaryOperator expression
-	| stringValue
-	| numberValue
-	| booleanValue
-	| objectRef
-	| get
-	| functionCall
-	| identifierRef
-	| parenthesisExpression;
-
-parenthesisExpression: '(' expression ')';
-
-numberValue: Number;
-
-stringValue: String;
-
-nullValue: Null;
-
-objectRef: ObjectReference;
-
-identifierRef: Identifier;
-
-compareOperator: '<' | '<=' | '==' | '!=' | '>' | '>=' | '!=';
-
-logicalOperator: '&&' | '||';
-
-binaryOperator: '&' | '|' | '%';
-
-arithmeticOperator: '+' | '-' | '/' | '*';
-
-unaryOperator: LogicalNot | '-';
+	Null # nullExpression
+	| expression (
+		LessThan
+		| LessOrEqual
+		| Equals
+		| Unequal
+		| GreaterThan
+		| GreaterOrEqual
+	) expression										# compareExpression
+	| expression (LogicalAnd | LogicalOr) expression	# LogicalExpression
+	| expression (BinaryAnd | BinaryOr) expression		# binaryExpression
+	| expression (
+		ArithmeticAdd
+		| ArithmeticSub
+		| ArithmeticMul
+		| Slash
+		| ArithmeticExp
+		| ArithmeticModus
+	) expression								# arithmeticExpression
+	| (LogicalNot | ArithmeticSub) expression	# unaryExpression
+	| String									# stringExpression
+	| Number									# numberExpression
+	| (True | False)							# booleanExpression
+	| ObjectReference							# objectReferenceExpression
+	| get										# getExpression
+	| functionCall								# functionExpression
+	| Identifier								# identifierReferenceExpression
+	| BracketOpen expression BracketClose		# parenthesisExpression;
 
 get:
-	Get '(' getPath ')' '.' (
+	Get BracketOpen getPath BracketClose Dot (
 		(Identifier | ObjectReference) (
-			'[' (ObjectReference | String | Number) ']'
+			SquareBracketOpen (ObjectReference | String | Number) SquareBracketClose
 		)?
 	);
 
-functionCall: Identifier '(' arguments ')';
-
-booleanValue: True | False;
+functionCall: Identifier BracketOpen arguments BracketClose;
 
 getPath: (Slash (Identifier | pathVariableReplace))+;
 
 matchPath: (Slash (Identifier | pathVariable))+;
+
+/* Structural  */
+
+CurlyOpen: '{';
+CurlyClose: '}';
+
+BracketOpen: '(';
+BracketClose: ')';
+
+SquareBracketOpen: '[';
+SquareBracketClose: ']';
+
+Dot: '.';
+Colon: ':';
+Comma: ',';
+Semicolon: ';';
+
+/* Operators */
+LessThan: '<';
+LessOrEqual: '<=';
+GreaterOrEqual: '>=';
+GreaterThan: '>';
+Equals: '==';
+Unequal: '!=';
+
+LogicalAnd: '&&';
+LogicalOr: '||';
+LogicalNot: '!';
+
+BinaryAnd: '&';
+BinaryOr: '|';
+
+ArithmeticAdd: '+';
+ArithmeticSub: '-';
+ArithmeticMul: '*';
+ArithmeticExp: '^';
+ArithmeticModus: '%';
 
 /* Reserved words */
 
@@ -106,10 +138,6 @@ Write: 'write';
 Delete: 'delete';
 
 Function: 'function';
-
-LogicalAnd: '&&';
-LogicalOr: '||';
-LogicalNot: '!';
 
 Return: 'return';
 Null: 'null';

@@ -9,11 +9,13 @@
     {
       "type": "antlr-debug",
       "request": "launch",
-      "name": "Debug Current Grammar",
-      "input": "src/FirestoreRules.g4",
+      "name": "Debug Firebase Rules Grammar",
+      "input": "test.rules",
+      "grammar": "src/FirebaseRules.g4",
+      "startRule": "service",
+      "printParseTree": true,
       "visualParseTree": true
     },
-    
     {
       "type": "node",
       "request": "launch",

@@ -1,29 +1,29 @@
-import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
+import { ParserRuleContext, Recognizer, Token } from 'antlr4';
+import { ParseTreeWalker } from 'antlr4/tree/Tree';
 
-import { ParserInterpreter, ParserRuleContext } from 'antlr4ts';
-import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { parseFirebaseRulesFromString } from '..';
-import { FirebaseRulesListener } from '../FirebaseRulesListener';
+import { FirebaseRulesListener } from '../parser/FirebaseRulesListener';
 import {
   AllowContext,
   AllowKeyContext,
-  ArithmeticOperatorContext,
-  BinaryOperatorContext,
-  BooleanValueContext,
-  CompareOperatorContext,
+  ArithmeticExpressionContext,
+  BinaryExpressionContext,
+  BooleanExpressionContext,
+  CompareExpressionContext,
   ExpressionContext,
   FirebaseRulesParser,
-  FunctionContext,
-  GetContext,
-  LogicalOperatorContext,
+  FunctionExpressionContext,
+  GetExpressionContext,
+  LogicalExpressionContext,
   MatcherContext,
   NamespaceContext,
-  NullValueContext,
-  NumberValueContext,
-  ParenthesisExpressionContext,
-  StringValueContext,
-  UnaryOperatorContext,
-} from '../FirebaseRulesParser';
+  NullExpressionContext,
+  NumberExpressionContext,
+  // ParenthesisExpressionContext,
+  PathVariableContext,
+  StringExpressionContext,
+  UnaryExpressionContext,
+} from '../parser/FirebaseRulesParser';
 import { FirebasePathAccessRights } from './FirebasePathAccessRights';
 import { MatchPattern } from './utils/patternMatch';
 
@@ -118,7 +118,7 @@ interface StackItem {
   ctx?: any;
 }
 
-export class RulesParser extends AbstractParseTreeVisitor<number> implements FirebaseRulesListener {
+export class RulesParser extends FirebaseRulesListener {
   /**
    * Get the namespace used in rules -file
    *
@@ -140,6 +140,54 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
 
   public init = (rulesFile: string): RulesParser => {
     this._parser = parseFirebaseRulesFromString(rulesFile);
+    this._parser.addErrorListener({
+      syntaxError: (
+        recognizer: Recognizer,
+        offendingSymbol: Token,
+        line: number,
+        column: number,
+        msg: string,
+        e: any
+      ) => {
+        // tslint:disable-next-line: no-console
+        console.error(msg);
+      },
+      reportAmbiguity: (
+        recognizer: Recognizer,
+        dfa: any,
+        startIndex: number,
+        stopIndex: number,
+        exact: any,
+        ambigAlts: any,
+        configs: any
+      ) => {
+        // tslint:disable-next-line: no-console
+        console.error('Ambiguity: ' + ambigAlts);
+      },
+      reportAttemptingFullContext: (
+        recognizer: Recognizer,
+        dfa: any,
+        startIndex: number,
+        stopIndex: number,
+        conflictingAlts: any,
+        configs: any
+      ) => {
+        // tslint:disable-next-line: no-console
+        console.error(conflictingAlts);
+      },
+      reportContextSensitivity: (
+        recognizer: Recognizer,
+        dfa: any,
+        startIndex: number,
+        stopIndex: number,
+        conflictingAlts: any,
+        configs: any
+      ) => {
+        // tslint:disable-next-line: no-console
+        console.error(conflictingAlts);
+      },
+    });
+
     this.mapRulesForPaths(this._parser);
     return this;
   }
@@ -165,14 +213,15 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
   }
 
   public enterNamespace = (ctx: NamespaceContext) => {
-    this._namespace = ctx.text;
+    this._namespace = ctx.getText();
   }
 
   public enterMatcher = (ctx: MatcherContext) => {
     // matcher will only define the place in databse tree where operatation are targeted
-    if (ctx.children) {
-      const path = ctx.children[1];
-      const pathElement = path.text;
+
+    if (ctx.getChildCount() > 0) {
+      const path = ctx.getChild(1);
+      const pathElement = this.generatePath(path);
       this.pathElements.push(pathElement);
       const p = this.getCurrentPath();
     } else {
@@ -198,7 +247,7 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
     this.stack.push({
       type: StackItemType.ALLOW,
       obj: currentAllowRule,
-      debug: ctx.text,
+      debug: ctx.getText(),
     });
 
     this.allowRules.push(currentAllowRule);
@@ -231,186 +280,199 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
       throwError('Allow key defined while no allow operation is active.', ctx);
       return;
     }
-    currentAllowRule.allowKeys.push(ctx.text as AllowKey);
+    currentAllowRule.allowKeys.push(ctx.getText() as AllowKey);
   }
 
-  public enterExpression = (ctx: ExpressionContext) => {
-    // this.activeExpression = this.activeExpression || new ExpressionExecutor();
-    this.stack.push({
-      type: StackItemType.EXPRESSION,
-      debug: ctx.text,
-      ctx,
-    });
-  }
+  // public enterParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
+  //   this.stack.push({
+  //     type: StackItemType.PARENTHESIS,
+  //     debug: ctx.getText(),
+  //     ctx,
+  //   });
+  // }
 
-  public enterParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
-    this.stack.push({
-      type: StackItemType.PARENTHESIS,
-      debug: ctx.text,
-      ctx,
-    });
-  }
+  // public exitParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
+  //   const items: StackItem[] = [];
+  //   do {
+  //     const item = this.stack.pop();
+  //     if (!item || item.ctx === ctx) {
+  //       break;
+  //     }
+  //     items.push(item);
+  //   } while (true);
+  //   this.resolveExpressions(ctx, items);
+  // }
 
-  public exitParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
-    const items: StackItem[] = [];
-    do {
-      const item = this.stack.pop();
-      if (!item || item.ctx === ctx) {
-        break;
-      }
-      items.push(item);
-    } while (true);
-    this.resolveExpressions(ctx, items);
-  }
+  // public enterExpression = (ctx: ExpressionContext) => {
+  //   // this.activeExpression = this.activeExpression || new ExpressionExecutor();
+  //   this.stack.push({
+  //     type: StackItemType.EXPRESSION,
+  //     debug: ctx.getText(),
+  //     ctx,
+  //   });
+  // }
 
-  public exitExpression = (ctx: ExpressionContext) => {
-    const items: StackItem[] = [];
+  // public exitExpression = (ctx: ExpressionContext) => {
+  //   const items: StackItem[] = [];
 
-    do {
-      const item = this.stack.pop();
-      if (!item || item.ctx === ctx) {
-        break;
-      }
-      items.push(item);
-    } while (true);
+  //   do {
+  //     const item = this.stack.pop();
+  //     if (!item || item.ctx === ctx) {
+  //       break;
+  //     }
+  //     items.push(item);
+  //   } while (true);
 
-    this.resolveExpressions(ctx, items);
-  }
+  //   this.resolveExpressions(ctx, items);
+  // }
 
-  public enterBooleanValue = (ctx: BooleanValueContext) => {
+  public exitBooleanExpression = (ctx: BooleanExpressionContext) => {
     this.stack.push({
       type: StackItemType.VALUE,
-      callback: () => JSON.parse(ctx.text),
-      debug: ctx.text,
+      callback: () => JSON.parse(ctx.getText()),
+      debug: ctx.getText(),
     });
   }
 
-  public enterNullValue = (ctx: NullValueContext) => {
+  public exitNullExpression = (ctx: NullExpressionContext) => {
     this.stack.push({
       type: StackItemType.VALUE,
       callback: () => null,
-      debug: ctx.text,
+      debug: ctx.getText(),
     });
   }
 
-  public enterCompareOperator = (ctx: CompareOperatorContext) => {
-    this.stack.push({
-      type: StackItemType.COMPARE,
-      debug: ctx.text,
-      obj: ctx.text,
-    });
+  public exitCompareExpression = (ctx: CompareExpressionContext) => {
+    this.handleBinaryOperation(StackItemType.COMPARE, ctx);
   }
 
-  public enterArithmeticOperator = (ctx: ArithmeticOperatorContext) => {
-    this.stack.push({
-      type: StackItemType.ARITHMETIC,
-      debug: ctx.text,
-      obj: ctx.text,
-    });
+  public exitArithmeticExpression = (ctx: ArithmeticExpressionContext) => {
+    this.handleBinaryOperation(StackItemType.ARITHMETIC, ctx);
   }
 
-  public enterLogicalOperator = (ctx: LogicalOperatorContext) => {
-    this.stack.push({
-      type: StackItemType.LOGICAL,
-      debug: ctx.text,
-      obj: ctx.text,
-    });
+  public exitLogicalExpression = (ctx: LogicalExpressionContext) => {
+    this.handleBinaryOperation(StackItemType.LOGICAL, ctx);
   }
 
-  public enterBinaryOperator = (ctx: BinaryOperatorContext) => {
-    this.stack.push({
-      type: StackItemType.BINARY,
-      debug: ctx.text,
-      obj: ctx.text,
-    });
+  public exitBinaryExpression = (ctx: BinaryExpressionContext) => {
+    this.handleBinaryOperation(StackItemType.BINARY, ctx);
   }
 
-  public enterUnaryOperator = (ctx: UnaryOperatorContext) => {
+  // public exitParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
+  //   const value = this.stack.pop();
+  // }
+  public exitUnaryExpression = (ctx: UnaryExpressionContext) => {
+    const value = this.stack.pop();
+    // toto undefined
+
+    const operator = ctx.getChild(0).symbol.text;
+
     this.stack.push({
       type: StackItemType.UNARY,
-      debug: ctx.text,
-      obj: ctx.text,
+      debug: ctx.getText(),
+      callback: this.resolveUnaryOperation(operator, value!, ctx),
     });
   }
 
-  public enterGet = (ctx: GetContext) => {
+  public exitGetExpression = (ctx: GetExpressionContext) => {
     this.stack.push({
       type: StackItemType.GET,
-      debug: ctx.text,
-      obj: ctx.text,
+      debug: ctx.getText(),
+      obj: ctx.getText(),
     });
   }
 
-  public enterFunction = (ctx: FunctionContext) => {
+  public exitFunctionExpression = (ctx: FunctionExpressionContext) => {
+    // TODO expression
     this.stack.push({
       type: StackItemType.FUNCTION,
-      debug: ctx.text,
-      obj: ctx.text,
+      debug: ctx.getText(),
+      obj: ctx.getText(),
     });
   }
-  public enterNumberValue = (ctx: NumberValueContext) => {
+
+  public exitNumberExpression = (ctx: NumberExpressionContext) => {
     this.stack.push({
       type: StackItemType.VALUE,
-      debug: ctx.text,
+      debug: ctx.getText(),
 
-      callback: () => JSON.parse(ctx.text),
+      callback: () => JSON.parse(ctx.getText()),
     });
   }
 
-  public enterStringValue = (ctx: StringValueContext) => {
+  public exitStringExpression = (ctx: StringExpressionContext) => {
     this.stack.push({
       type: StackItemType.VALUE,
-      debug: ctx.text,
+      debug: ctx.getText(),
 
-      callback: () => JSON.parse(ctx.text),
+      callback: () => JSON.parse(ctx.getText()),
     });
   }
 
-  private resolveExpressions = (ctx: any, items: StackItem[]) => {
-    switch (items.length) {
-      case 1:
-        this.stack.push({
-          type: StackItemType.RESOLVED,
-          callback: items[0].callback,
-          debug: 'resolved: ' + items[0].debug,
-        });
-        break;
-      case 2:
-        this.stack.push({
-          type: StackItemType.RESOLVED,
-          callback: this.resolveUnaryOperation(items, ctx),
-          debug: `resolved: ${items[1].obj} ${items[0].debug}`,
-        });
+  private generatePath = (path: any): string => {
+    let result = '';
 
-        break;
-      case 3:
-        this.stack.push({
-          type: StackItemType.RESOLVED,
-          callback: this.resolveBinaryOperation(items, ctx),
-          debug: `resolved: ${items[2].debug} ${items[1].obj} ${items[0].debug}`,
-        });
-        break;
+    for (let i = 0; i < path.getChildCount(); i++) {
+      const child = path.getChild(i);
 
-      default:
-        // TODO check ternary operation
-        do {
-          // operations are resolved from left to right
-          const firstItems = items.splice(0, 3);
-          const callback = this.resolveBinaryOperation(firstItems, ctx);
-          items.unshift({
-            type: StackItemType.RESOLVED,
-            callback,
-            debug: `${firstItems[0].debug} ${firstItems[1].debug} ${firstItems[2].debug}`,
-          });
-        } while (items.length > 1);
-
-        throwError(`Unsupported number of expression arguments ${items.length}`, ctx);
+      if (child instanceof PathVariableContext) {
+        for (let j = 0; j < child.getChildCount(); j++) {
+          result += child.getChild(j).symbol.text;
+        }
+      } else {
+        result += child.symbol.text;
+      }
     }
+    return result;
   }
-  private resolveUnaryOperation = (items: StackItem[], ctx: ExpressionContext): ExpressionCallback => {
-    const operation = items[1];
-    const expression = items[0];
 
+  // private resolveExpressions = (ctx: any, items: StackItem[]) => {
+  //   switch (items.length) {
+  //     case 1:
+  //       this.stack.push({
+  //         type: StackItemType.RESOLVED,
+  //         callback: items[0].callback,
+  //         debug: 'resolved: ' + items[0].debug,
+  //       });
+  //       break;
+  //     case 2:
+  //       this.stack.push({
+  //         type: StackItemType.RESOLVED,
+  //         callback: this.resolveUnaryOperation(items, ctx),
+  //         debug: `resolved: ${items[1].obj} ${items[0].debug}`,
+  //       });
+
+  //       break;
+  //     case 3:
+  //       this.stack.push({
+  //         type: StackItemType.RESOLVED,
+  //         callback: this.resolveBinaryOperationOld(items, ctx),
+  //         debug: `resolved: ${items[2].debug} ${items[1].obj} ${items[0].debug}`,
+  //       });
+  //       break;
+
+  //     default:
+  //       // TODO check ternary operation
+  //       do {
+  //         // operations are resolved from left to right
+  //         const firstItems = items.splice(0, 3);
+  //         const callback = this.resolveBinaryOperationOld(firstItems, ctx);
+  //         items.unshift({
+  //           type: StackItemType.RESOLVED,
+  //           callback,
+  //           debug: `${firstItems[0].debug} ${firstItems[1].debug} ${firstItems[2].debug}`,
+  //         });
+  //       } while (items.length > 1);
+
+  //       throwError(`Unsupported number of expression arguments ${items.length}`, ctx);
+  //   }
+  // }
+
+  private resolveUnaryOperation = (
+    operation: string,
+    expression: StackItem,
+    ctx: ExpressionContext
+  ): ExpressionCallback => {
     if (!(expression && operation)) {
       throwError(`Internal error`, ctx);
     }
@@ -418,26 +480,72 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
     return context => {
       const value = expression.callback!(context);
 
-      const operator = items[1].obj;
-
-      switch (operator) {
+      switch (operation) {
         case '!':
           return !value;
         case '-':
           return -value;
 
         default:
-          throw new Error(
-            `Unidentified operator: ${operator} at line ${ctx.start.line} column ${ctx.start.charPositionInLine}.`
-          );
+          throw new Error(`Unidentified operator: ${operation} at line ${ctx.start.line} column ${ctx.start.start}.`);
       }
     };
   }
 
-  private resolveBinaryOperation = (items: StackItem[], ctx: ExpressionContext): ExpressionCallback => {
-    const left = items[2];
-    const right = items[0];
+  // private resolveBinaryOperationOld = (items: StackItem[], ctx: ExpressionContext): ExpressionCallback => {
+  //   const left = items[2];
+  //   const right = items[0];
 
+  //   if (!(right && left)) {
+  //     throwError(`Internal error`, ctx);
+  //   }
+
+  //   return context => {
+  //     const leftValue = left.callback!(context);
+  //     const rightValue = right.callback!(context);
+
+  //     const operator = items[1].obj;
+
+  //     switch (operator) {
+  //       case '<':
+  //         return leftValue < rightValue;
+  //       case '<=':
+  //         return leftValue <= rightValue;
+  //       case '==':
+  //         return leftValue === rightValue;
+  //       case '!=':
+  //         return leftValue !== rightValue;
+  //       case '>':
+  //         return leftValue > rightValue;
+  //       case '>=':
+  //         return leftValue >= rightValue;
+  //       case '+':
+  //         return leftValue + rightValue;
+  //       case '-':
+  //         return leftValue - rightValue;
+  //       case '*':
+  //         return leftValue * rightValue;
+  //       case '/':
+  //         return leftValue / rightValue;
+  //       case '&&':
+  //         return leftValue && rightValue;
+  //       case '||':
+  //         return leftValue || rightValue;
+  //       case '^':
+  //         return leftValue ^ rightValue;
+
+  //       default:
+  //         throw new Error(`Unidentified operator: ${operator} at line ${ctx.start.line} column ${ctx.start.start}.`);
+  //     }
+  //   };
+  // }
+
+  private resolveBinaryOperation = (
+    left: StackItem,
+    operator: string,
+    right: StackItem,
+    ctx: ExpressionContext
+  ): ExpressionCallback => {
     if (!(right && left)) {
       throwError(`Internal error`, ctx);
     }
@@ -445,8 +553,6 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
     return context => {
       const leftValue = left.callback!(context);
       const rightValue = right.callback!(context);
-
-      const operator = items[1].obj;
 
       switch (operator) {
         case '<':
@@ -477,13 +583,10 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
           return leftValue ^ rightValue;
 
         default:
-          throw new Error(
-            `Unidentified operator: ${operator} at line ${ctx.start.line} column ${ctx.start.charPositionInLine}.`
-          );
+          throw new Error(`Unidentified operator: ${operator} at line ${ctx.start.line} column ${ctx.start.start}.`);
       }
     };
   }
-
   private getCurrentPath = () => {
     let result = '';
     for (const pathElement of this.pathElements) {
@@ -502,7 +605,20 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
 
     ParseTreeWalker.DEFAULT.walk(this, service);
   }
+
+  private handleBinaryOperation(type: StackItemType, ctx: ParserRuleContext) {
+    const right = this.stack.pop();
+    const left = this.stack.pop();
+    const operator = ctx.getChild(1).getText();
+    this.stack.push({
+      type,
+      debug: operator,
+      callback: this.resolveBinaryOperation(left!, operator, right!, ctx),
+    });
+  }
 }
-function throwError(message: string, ctx: CompareOperatorContext): never {
-  throw new Error(`${message} at line ${ctx.start.line} column ${ctx.start.charPositionInLine}.`);
+function throwError(message: string, ctx: ParserRuleContext): never {
+  throw new Error(
+    `${message} at line ${ctx.start.line} column ${ctx.start.start}. ${ctx.getSourceInterval().toString()}`
+  );
 }
