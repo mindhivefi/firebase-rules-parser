@@ -455,6 +455,8 @@ export class RulesParser extends AbstractParseTreeVisitor<number> implements Fir
           return leftValue <= rightValue;
         case '==':
           return leftValue === rightValue;
+        case '!=':
+          return leftValue !== rightValue;
         case '>':
           return leftValue > rightValue;
         case '>=':

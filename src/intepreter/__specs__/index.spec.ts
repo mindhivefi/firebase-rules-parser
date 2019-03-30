@@ -71,6 +71,11 @@ describe('Firebase Rules', () => {
         const rules = new RulesParser().init(ruleFile(3, '==', 3));
         expect(rules.getRightsForPath(path, createContext())).toEqual(result(true));
       });
+
+      it('Will support inequality (!=)', () => {
+        const rules = new RulesParser().init(ruleFile(3, '!=', 2));
+        expect(rules.getRightsForPath(path, createContext())).toEqual(result(true));
+      });
     });
     describe('Parenthesis', () => {
       it('Will support parenthesis, (2 + 3) == 5', () => {

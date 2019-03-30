@@ -17,9 +17,6 @@ import { VocabularyImpl } from 'antlr4ts/VocabularyImpl';
 
 import { FirebaseRulesListener } from './FirebaseRulesListener';
 
-
-
-//import { RuleVersion } from "antlr4ts/RuleVersion";
 export class FirebaseRulesParser extends Parser {
 	public static readonly T__0 = 1;
 	public static readonly T__1 = 2;
@@ -112,7 +109,7 @@ export class FirebaseRulesParser extends Parser {
 
 	private static readonly _LITERAL_NAMES: Array<string | undefined> = [
 		undefined, "'{'", "'}'", "','", "':'", "';'", "'$('", "')'", "'='", "'**'", 
-		"'('", "'<'", "'<='", "'=='", "'>'", "'>='", "'!='", "'&'", "'|'", "'%'", 
+		"'('", "'<'", "'<='", "'=='", "'!='", "'>'", "'>='", "'&'", "'|'", "'%'", 
 		"'+'", "'-'", "'*'", "'.'", "'['", "']'", "'allow'", "'match'", "'if'", 
 		"'get'", "'true'", "'false'", "'list'", "'create'", "'update'", "'read'", 
 		"'write'", "'delete'", "'function'", "'&&'", "'||'", "'!'", "'return'", 

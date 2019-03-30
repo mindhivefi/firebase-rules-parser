@@ -43,7 +43,7 @@ public class FirebaseRulesParser extends Parser {
 
 	private static final String[] _LITERAL_NAMES = {
 		null, "'{'", "'}'", "','", "':'", "';'", "'$('", "')'", "'='", "'**'", 
-		"'('", "'<'", "'<='", "'=='", "'>'", "'>='", "'!='", "'&'", "'|'", "'%'", 
+		"'('", "'<'", "'<='", "'=='", "'!='", "'>'", "'>='", "'&'", "'|'", "'%'", 
 		"'+'", "'-'", "'*'", "'.'", "'['", "']'", "'allow'", "'match'", "'if'", 
 		"'get'", "'true'", "'false'", "'list'", "'create'", "'update'", "'read'", 
 		"'write'", "'delete'", "'function'", "'&&'", "'||'", "'!'", "'return'", 

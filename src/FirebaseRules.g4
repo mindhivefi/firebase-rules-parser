@@ -62,7 +62,7 @@ objectRef: ObjectReference;
 
 identifierRef: Identifier;
 
-compareOperator: '<' | '<=' | '==' | '>' | '>=' | '!=';
+compareOperator: '<' | '<=' | '==' | '!=' | '>' | '>=' | '!=';
 
 logicalOperator: '&&' | '||';
 
