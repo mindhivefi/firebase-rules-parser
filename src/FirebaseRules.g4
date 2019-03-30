@@ -1,93 +1,119 @@
-grammar FirestoreRules;
+grammar FirebaseRules;
 /* This will be the entry point of our parser. */
-service: 'service' namespace namespaceBlock;
+service: Service namespace namespaceBlock;
 
+/**
+ * Namespace definition shown after service
+ */
 namespace: Identifier | ObjectReference;
 
+/**
+ * Namespace block can only contain matchers, functions and comments
+ */
 namespaceBlock: '{' (matcher | Comment | function)* '}';
 
 matchBlock: '{' (allow | matcher | Comment | function)* '}';
 
 allowKey: (Read | Write | Update | Delete | Create | List | Get);
 
-allow:
-	'allow' allowKey (',' allowKey)* (':' If expression)? ';';
-
-pathVariableReplace:
-	'$(' (Identifier | String | Number | ObjectReference) ')';
-
-pathVariable: '{' Identifier ('=' '**')? '}';
-
-// condition: booleanValue | expression;
-
-arguments: Identifier? (',' Identifier)*;
-
-function:
-	'function' Identifier '(' arguments ')' '{' Return expression ';' '}';
-
-expression:
-	Null
-	| expression compareOperator expression
-	| String
-	| Number
-	| booleanValue
-	| ObjectReference
-	| get
-	| functionCall
-	| Identifier
-	| '(' expression ')';
-
-compareOperator: '<' | '==' | '>' | '!=' | '&&' | '||';
-
-get:
-	'get' '(' getPath ')' '.' (
-		(Identifier | ObjectReference) (
-			'[' (ObjectReference | String | Number) ']'
-		)?
-	);
-
-functionCall: Identifier '(' arguments ')';
-booleanValue: True | False;
-
-getPath: (Slash (Identifier | pathVariableReplace))+;
-
-matchPath: (Slash (Identifier | pathVariable))+;
 /**
  * Path matcher, can be:fragment /collection/doc/sub/ /collection/{doc}/ /collection/{doc=**}/
  * /collection/{doc=path*}/
  */
 matcher: Match matchPath matchBlock;
 
-/* Addition and subtraction have the lowest precedence. */
-additionExp: multiplyExp ('+' multiplyExp | '-' multiplyExp)*;
+allow: Allow allowKey (',' allowKey)* (':' If expression)? ';';
 
-/* Multiplication and division have a higher precedence. */
-multiplyExp: atomExp ( '*' atomExp | '/' atomExp)*;
+pathVariableReplace:
+	'$(' (Identifier | String | Number | ObjectReference) ')';
 
-/* An expression atom is the smallest part of an expression: a number. Or when we encounter
- parenthesis, we're making a recursive call back to the rule 'additionExp'. As you can see, an
- 'atomExp' has the highest precedence.
- */
-atomExp: Number | '(' additionExp ')';
+pathVariable: '{' Identifier ('=' '**')? '}';
+
+arguments: Identifier? (',' Identifier)*;
+
+function:
+	Function Identifier '(' arguments ')' '{' Return expression ';' '}';
+
+expression:
+	nullValue
+	| expression compareOperator expression
+	| expression logicalOperator expression
+	| expression binaryOperator expression
+	| expression arithmeticOperator expression
+	| unaryOperator expression
+	| stringValue
+	| numberValue
+	| booleanValue
+	| objectRef
+	| get
+	| functionCall
+	| identifierRef
+	| parenthesisExpression;
+
+parenthesisExpression: '(' expression ')';
+
+numberValue: Number;
+
+stringValue: String;
+
+nullValue: Null;
+
+objectRef: ObjectReference;
+
+identifierRef: Identifier;
+
+compareOperator: '<' | '<=' | '==' | '>' | '>=' | '!=';
+
+logicalOperator: '&&' | '||';
+
+binaryOperator: '&' | '|' | '%';
+
+arithmeticOperator: '+' | '-' | '/' | '*';
+
+unaryOperator: LogicalNot | '-';
+
+get:
+	Get '(' getPath ')' '.' (
+		(Identifier | ObjectReference) (
+			'[' (ObjectReference | String | Number) ']'
+		)?
+	);
+
+functionCall: Identifier '(' arguments ')';
+
+booleanValue: True | False;
+
+getPath: (Slash (Identifier | pathVariableReplace))+;
+
+matchPath: (Slash (Identifier | pathVariable))+;
 
 /* Reserved words */
+
+Allow: 'allow';
 Match: 'match';
 If: 'if';
+Get: 'get';
 
 True: 'true';
 False: 'false';
 
 /** Allow keys */
 List: 'list';
-Get: 'get';
 Create: 'create';
 Update: 'update';
 Read: 'read';
 Write: 'write';
 Delete: 'delete';
 
+Function: 'function';
+
+LogicalAnd: '&&';
+LogicalOr: '||';
+LogicalNot: '!';
+
 Return: 'return';
 Null: 'null';
+Service: 'service';
 
 ObjectReference: Identifier ('.' Identifier)+;
 

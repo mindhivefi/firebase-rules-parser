@@ -1,17 +1,31 @@
-import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
+import { ANTLRInputStream, CharStreams, CommonTokenStream } from 'antlr4ts';
 import * as fs from 'fs';
-import * as path from 'path';
-import { FirestoreRulesLexer } from './FirestoreRulesLexer';
-import { FirestoreRulesParser } from './FirestoreRulesParser';
 
-const file = fs.readFileSync(path.resolve(__dirname, '../test.rules'), 'utf8');
+import { FirebaseRulesLexer } from './FirebaseRulesLexer';
+import { FirebaseRulesParser } from './FirebaseRulesParser';
 
-const inputStream = new ANTLRInputStream(file);
-const lexer = new FirestoreRulesLexer(inputStream);
-const tokenStream = new CommonTokenStream(lexer);
-const parser = new FirestoreRulesParser(tokenStream);
+/**
+ * Parse firebase rules from file
+ * @param file Filepath to rules-file
+ */
+export function parseFirebaseRulesFromFile(fileName: string): FirebaseRulesParser {
+  const file = fs.readFileSync(fileName, 'utf8');
+  return parseFirebaseRulesFromString(file);
+}
 
-const service = parser.service();
-const namespace = service.namespace();
-// tslint:disable-next-line: no-console
-console.log(namespace.text);
+/**
+ * Parse firebase rules from file
+ * @param rules Inmemory file containing rules-file
+ */
+export function parseFirebaseRulesFromString(rules: string): FirebaseRulesParser {
+  const inputStream = new ANTLRInputStream(rules);
+  const lexer = new FirebaseRulesLexer(inputStream);
+  const tokenStream = new CommonTokenStream(lexer);
+  return new FirebaseRulesParser(tokenStream);
+}
+
+// const parser = parseFirebaseRules(file);
+// const service = parser.service();
+// const namespace = service.namespace();
+// // tslint:disable-next-line: no-console
+// console.log(namespace.text);

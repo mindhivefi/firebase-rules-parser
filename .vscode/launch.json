@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "configurations": [
 
+
     {
       "type": "antlr-debug",
       "request": "launch",
@@ -25,6 +26,25 @@
       "outFiles": [
         "${workspaceFolder}/bin/**/*.js"
       ]
-    }
+    },
+    {
+      "name": "Debug Tests",
+      "type": "node",
+      "request": "launch",
+      "args": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "node_modules/jest*/**"
+      ]
+    },
   ]
 }
