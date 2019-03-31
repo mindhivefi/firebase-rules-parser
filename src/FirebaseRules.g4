@@ -28,7 +28,7 @@ matcher: Match matchPath matchBlock;
 allow:
 	Allow allowKey (Comma allowKey)* (Colon If expression)? Semicolon;
 
-pathVariableReplace: '$(' (Identifier | String | Number) ')';
+getPathVariable: Identifier;
 
 pathVariable: CurlyOpen Identifier ('=' '**')? CurlyClose;
 
@@ -45,9 +45,35 @@ functionDeclaration:
 		CurlyClose;
 
 fieldReference:
-	(Dot Identifier)									# fieldReferenceWithIdentifier
+	(Dot id)											# fieldReferenceWithIdentifier
 	| (SquareBracketOpen expression SquareBracketClose)	# fieldReferenceWithMemberRef;
 
+/*
+ * Id is a set of all possible id's with reserved words. This should be used only with object
+ * references
+ */
+id:
+	Identifier
+	| Allow
+	| Match
+	| If
+	| Exists
+	| True
+	| False
+	| List
+	| Create
+	| Update
+	| Read
+	| Write
+	| Delete
+	| Function
+	| Return
+	| Null
+	| Service;
+
+/**
+ * Any supported expression
+ */
 expression:
 	Null # nullExpression
 	| expression (
@@ -73,26 +99,26 @@ expression:
 	| Number									# numberExpression
 	| (True | False)							# booleanExpression
 	| objectReference							# objectReferenceExpression
-	| get										# getExpression
+	| ruleFunctionCall							# getExpression
 	| functionCall								# functionExpression
-	// | Identifier (fieldReference)*			# identifierReferenceExpression
-	| BracketOpen expression BracketClose # parenthesisExpression;
+	| BracketOpen expression BracketClose		# parenthesisExpression;
 
 objectReference: Identifier (fieldReference)*;
 
-get:
-	Get BracketOpen getPath BracketClose Dot (
-		(Identifier) (
-			SquareBracketOpen (String | Number | objectReference) SquareBracketClose
-		)?
-	);
+getPathExpressionVariable:
+	PathVariableBracket expression BracketClose;
+
+getPath: (Slash (getPathVariable | getPathExpressionVariable))+;
+/* Firestore rules own function call that have special input args */
+ruleFunctionCall:
+	(Get | Exists) BracketOpen getPath BracketClose (
+		fieldReference
+	)*;
 
 functionCall:
 	Identifier BracketOpen arguments BracketClose (
 		fieldReference
 	)*;
-
-getPath: (Slash (Identifier | pathVariableReplace))+;
 
 matchPath: (Slash (Identifier | pathVariable))+;
 
@@ -103,6 +129,8 @@ CurlyClose: '}';
 
 BracketOpen: '(';
 BracketClose: ')';
+
+PathVariableBracket: '$(';
 
 SquareBracketOpen: '[';
 SquareBracketClose: ']';
@@ -139,6 +167,7 @@ Allow: 'allow';
 Match: 'match';
 If: 'if';
 Get: 'get';
+Exists: 'exists';
 
 True: 'true';
 False: 'false';
@@ -162,6 +191,7 @@ Number: ('0' ..'9')+ ('.' ('0' ..'9')+)?;
 
 String: ('\'' (~'\'')* '\'') | ('"' (~'"')* '"');
 
+// TODO unicode character support for identifiers
 Identifier: ('a' ..'z' | 'A' ..'Z' | '_') (
 		'a' ..'z'
 		| 'A' ..'Z'

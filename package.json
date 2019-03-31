@@ -64,6 +64,7 @@
     "@semantic-release/git": "7.0.8",
     "@semantic-release/npm": "5.1.4",
     "@types/antlr4": "4.7.0",
+    "@types/deepmerge": "2.2.0",
     "@types/jest": "24.0.11",
     "antlr4-tool": "1.0.26",
     "antlr4ts-cli": "0.5.0-alpha.3",
@@ -95,6 +96,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "antlr4": "4.7.2"
+    "antlr4": "4.7.2",
+    "deepmerge": "3.2.0"
   }
 }
