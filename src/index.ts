@@ -23,3 +23,7 @@ export function parseFirebaseRulesFromString(rules: string): FirebaseRulesParser
   const tokenStream = new CommonTokenStream(lexer);
   return new FirebaseRulesParser(tokenStream);
 }
+
+import FirebaseRulesIntepreterFacade from './intepreter/';
+
+export default () => new FirebaseRulesIntepreterFacade();

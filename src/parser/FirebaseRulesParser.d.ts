@@ -82,13 +82,9 @@ export declare class AllowContext extends ParserRuleContext {
     
 }
 
-export declare class PathVariableReplaceContext extends ParserRuleContext {
+export declare class GetPathVariableContext extends ParserRuleContext {
     
     public Identifier(): TerminalNode;
-    
-    public String(): TerminalNode;
-    
-    public Number(): TerminalNode;
     
 }
 
@@ -148,7 +144,7 @@ export declare class FieldReferenceWithIdentifierContext extends ParserRuleConte
     
     public Dot(): TerminalNode;
     
-    public Identifier(): TerminalNode;
+    public id(): IdContext;
     
 }
 
@@ -163,6 +159,44 @@ export declare class FieldReferenceWithMemberRefContext extends ParserRuleContex
 }
 
 export declare class FieldReferenceContext extends ParserRuleContext {
+    
+}
+
+export declare class IdContext extends ParserRuleContext {
+    
+    public Identifier(): TerminalNode;
+    
+    public Allow(): TerminalNode;
+    
+    public Match(): TerminalNode;
+    
+    public If(): TerminalNode;
+    
+    public Exists(): TerminalNode;
+    
+    public True(): TerminalNode;
+    
+    public False(): TerminalNode;
+    
+    public List(): TerminalNode;
+    
+    public Create(): TerminalNode;
+    
+    public Update(): TerminalNode;
+    
+    public Read(): TerminalNode;
+    
+    public Write(): TerminalNode;
+    
+    public Delete(): TerminalNode;
+    
+    public Function(): TerminalNode;
+    
+    public Return(): TerminalNode;
+    
+    public Null(): TerminalNode;
+    
+    public Service(): TerminalNode;
     
 }
 
@@ -252,7 +286,7 @@ export declare class LogicalExpressionContext extends ParserRuleContext {
 
 export declare class GetExpressionContext extends ParserRuleContext {
     
-    public get(): GetContext;
+    public ruleFunctionCall(): RuleFunctionCallContext;
     
 }
 
@@ -284,9 +318,21 @@ export declare class ObjectReferenceContext extends ParserRuleContext {
     
 }
 
-export declare class GetContext extends ParserRuleContext {
+export declare class GetPathExpressionVariableContext extends ParserRuleContext {
     
-    public Get(): TerminalNode;
+    public PathVariableBracket(): TerminalNode;
+    
+    public expression(): ExpressionContext;
+    
+    public BracketClose(): TerminalNode;
+    
+}
+
+export declare class GetPathContext extends ParserRuleContext {
+    
+}
+
+export declare class RuleFunctionCallContext extends ParserRuleContext {
     
     public BracketOpen(): TerminalNode;
     
@@ -294,19 +340,9 @@ export declare class GetContext extends ParserRuleContext {
     
     public BracketClose(): TerminalNode;
     
-    public Dot(): TerminalNode;
+    public Get(): TerminalNode;
     
-    public Identifier(): TerminalNode;
-    
-    public SquareBracketOpen(): TerminalNode;
-    
-    public SquareBracketClose(): TerminalNode;
-    
-    public String(): TerminalNode;
-    
-    public Number(): TerminalNode;
-    
-    public objectReference(): ObjectReferenceContext;
+    public Exists(): TerminalNode;
     
 }
 
@@ -319,10 +355,6 @@ export declare class FunctionCallContext extends ParserRuleContext {
     public arguments(): ArgumentsContext;
     
     public BracketClose(): TerminalNode;
-    
-}
-
-export declare class GetPathContext extends ParserRuleContext {
     
 }
 
@@ -358,7 +390,7 @@ export declare class FirebaseRulesParser extends Parser {
 
     public allow(): AllowContext;
 
-    public pathVariableReplace(): PathVariableReplaceContext;
+    public getPathVariable(): GetPathVariableContext;
 
     public pathVariable(): PathVariableContext;
 
@@ -374,13 +406,17 @@ export declare class FirebaseRulesParser extends Parser {
 
     public fieldReference(): FieldReferenceContext;
 
+    public id(): IdContext;
+
     public objectReference(): ObjectReferenceContext;
 
-    public get(): GetContext;
-
-    public functionCall(): FunctionCallContext;
+    public getPathExpressionVariable(): GetPathExpressionVariableContext;
 
     public getPath(): GetPathContext;
+
+    public ruleFunctionCall(): RuleFunctionCallContext;
+
+    public functionCall(): FunctionCallContext;
 
     public matchPath(): MatchPathContext;
 

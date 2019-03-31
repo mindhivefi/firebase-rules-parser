@@ -60,8 +60,8 @@ FirebaseRulesVisitor.prototype.visitAllow = function(ctx) {
 };
 
 
-// Visit a parse tree produced by FirebaseRulesParser#pathVariableReplace.
-FirebaseRulesVisitor.prototype.visitPathVariableReplace = function(ctx) {
+// Visit a parse tree produced by FirebaseRulesParser#getPathVariable.
+FirebaseRulesVisitor.prototype.visitGetPathVariable = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -110,6 +110,12 @@ FirebaseRulesVisitor.prototype.visitFieldReferenceWithIdentifier = function(ctx)
 
 // Visit a parse tree produced by FirebaseRulesParser#fieldReferenceWithMemberRef.
 FirebaseRulesVisitor.prototype.visitFieldReferenceWithMemberRef = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#id.
+FirebaseRulesVisitor.prototype.visitId = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -198,20 +204,26 @@ FirebaseRulesVisitor.prototype.visitObjectReference = function(ctx) {
 };
 
 
-// Visit a parse tree produced by FirebaseRulesParser#get.
-FirebaseRulesVisitor.prototype.visitGet = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by FirebaseRulesParser#functionCall.
-FirebaseRulesVisitor.prototype.visitFunctionCall = function(ctx) {
+// Visit a parse tree produced by FirebaseRulesParser#getPathExpressionVariable.
+FirebaseRulesVisitor.prototype.visitGetPathExpressionVariable = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
 // Visit a parse tree produced by FirebaseRulesParser#getPath.
 FirebaseRulesVisitor.prototype.visitGetPath = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#ruleFunctionCall.
+FirebaseRulesVisitor.prototype.visitRuleFunctionCall = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#functionCall.
+FirebaseRulesVisitor.prototype.visitFunctionCall = function(ctx) {
   return this.visitChildren(ctx);
 };
 

@@ -83,12 +83,12 @@ FirebaseRulesListener.prototype.exitAllow = function(ctx) {
 };
 
 
-// Enter a parse tree produced by FirebaseRulesParser#pathVariableReplace.
-FirebaseRulesListener.prototype.enterPathVariableReplace = function(ctx) {
+// Enter a parse tree produced by FirebaseRulesParser#getPathVariable.
+FirebaseRulesListener.prototype.enterGetPathVariable = function(ctx) {
 };
 
-// Exit a parse tree produced by FirebaseRulesParser#pathVariableReplace.
-FirebaseRulesListener.prototype.exitPathVariableReplace = function(ctx) {
+// Exit a parse tree produced by FirebaseRulesParser#getPathVariable.
+FirebaseRulesListener.prototype.exitGetPathVariable = function(ctx) {
 };
 
 
@@ -161,6 +161,15 @@ FirebaseRulesListener.prototype.enterFieldReferenceWithMemberRef = function(ctx)
 
 // Exit a parse tree produced by FirebaseRulesParser#fieldReferenceWithMemberRef.
 FirebaseRulesListener.prototype.exitFieldReferenceWithMemberRef = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#id.
+FirebaseRulesListener.prototype.enterId = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#id.
+FirebaseRulesListener.prototype.exitId = function(ctx) {
 };
 
 
@@ -290,21 +299,12 @@ FirebaseRulesListener.prototype.exitObjectReference = function(ctx) {
 };
 
 
-// Enter a parse tree produced by FirebaseRulesParser#get.
-FirebaseRulesListener.prototype.enterGet = function(ctx) {
+// Enter a parse tree produced by FirebaseRulesParser#getPathExpressionVariable.
+FirebaseRulesListener.prototype.enterGetPathExpressionVariable = function(ctx) {
 };
 
-// Exit a parse tree produced by FirebaseRulesParser#get.
-FirebaseRulesListener.prototype.exitGet = function(ctx) {
-};
-
-
-// Enter a parse tree produced by FirebaseRulesParser#functionCall.
-FirebaseRulesListener.prototype.enterFunctionCall = function(ctx) {
-};
-
-// Exit a parse tree produced by FirebaseRulesParser#functionCall.
-FirebaseRulesListener.prototype.exitFunctionCall = function(ctx) {
+// Exit a parse tree produced by FirebaseRulesParser#getPathExpressionVariable.
+FirebaseRulesListener.prototype.exitGetPathExpressionVariable = function(ctx) {
 };
 
 
@@ -314,6 +314,24 @@ FirebaseRulesListener.prototype.enterGetPath = function(ctx) {
 
 // Exit a parse tree produced by FirebaseRulesParser#getPath.
 FirebaseRulesListener.prototype.exitGetPath = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#ruleFunctionCall.
+FirebaseRulesListener.prototype.enterRuleFunctionCall = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#ruleFunctionCall.
+FirebaseRulesListener.prototype.exitRuleFunctionCall = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#functionCall.
+FirebaseRulesListener.prototype.enterFunctionCall = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#functionCall.
+FirebaseRulesListener.prototype.exitFunctionCall = function(ctx) {
 };
 
 

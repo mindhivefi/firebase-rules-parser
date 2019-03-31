@@ -17,7 +17,7 @@ import {MatcherContext} from './FirebaseRulesParser';
 
 import {AllowContext} from './FirebaseRulesParser';
 
-import {PathVariableReplaceContext} from './FirebaseRulesParser';
+import {GetPathVariableContext} from './FirebaseRulesParser';
 
 import {PathVariableContext} from './FirebaseRulesParser';
 
@@ -33,15 +33,19 @@ import {FunctionDeclarationContext} from './FirebaseRulesParser';
 
 import {FieldReferenceContext} from './FirebaseRulesParser';
 
+import {IdContext} from './FirebaseRulesParser';
+
 import {ExpressionContext} from './FirebaseRulesParser';
 
 import {ObjectReferenceContext} from './FirebaseRulesParser';
 
-import {GetContext} from './FirebaseRulesParser';
-
-import {FunctionCallContext} from './FirebaseRulesParser';
+import {GetPathExpressionVariableContext} from './FirebaseRulesParser';
 
 import {GetPathContext} from './FirebaseRulesParser';
+
+import {RuleFunctionCallContext} from './FirebaseRulesParser';
+
+import {FunctionCallContext} from './FirebaseRulesParser';
 
 import {MatchPathContext} from './FirebaseRulesParser';
 
@@ -81,9 +85,9 @@ export declare class FirebaseRulesListener implements ParseTreeListener {
     
     public exitAllow(ctx: AllowContext): void;
     
-    public enterPathVariableReplace(ctx: PathVariableReplaceContext): void;
+    public enterGetPathVariable(ctx: GetPathVariableContext): void;
     
-    public exitPathVariableReplace(ctx: PathVariableReplaceContext): void;
+    public exitGetPathVariable(ctx: GetPathVariableContext): void;
     
     public enterPathVariable(ctx: PathVariableContext): void;
     
@@ -113,6 +117,10 @@ export declare class FirebaseRulesListener implements ParseTreeListener {
     
     public exitFieldReference(ctx: FieldReferenceContext): void;
     
+    public enterId(ctx: IdContext): void;
+    
+    public exitId(ctx: IdContext): void;
+    
     public enterExpression(ctx: ExpressionContext): void;
     
     public exitExpression(ctx: ExpressionContext): void;
@@ -121,17 +129,21 @@ export declare class FirebaseRulesListener implements ParseTreeListener {
     
     public exitObjectReference(ctx: ObjectReferenceContext): void;
     
-    public enterGet(ctx: GetContext): void;
+    public enterGetPathExpressionVariable(ctx: GetPathExpressionVariableContext): void;
     
-    public exitGet(ctx: GetContext): void;
-    
-    public enterFunctionCall(ctx: FunctionCallContext): void;
-    
-    public exitFunctionCall(ctx: FunctionCallContext): void;
+    public exitGetPathExpressionVariable(ctx: GetPathExpressionVariableContext): void;
     
     public enterGetPath(ctx: GetPathContext): void;
     
     public exitGetPath(ctx: GetPathContext): void;
+    
+    public enterRuleFunctionCall(ctx: RuleFunctionCallContext): void;
+    
+    public exitRuleFunctionCall(ctx: RuleFunctionCallContext): void;
+    
+    public enterFunctionCall(ctx: FunctionCallContext): void;
+    
+    public exitFunctionCall(ctx: FunctionCallContext): void;
     
     public enterMatchPath(ctx: MatchPathContext): void;
     

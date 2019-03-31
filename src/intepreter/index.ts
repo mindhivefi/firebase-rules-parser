@@ -1,6 +1,8 @@
 import { ParserRuleContext, Recognizer, Token } from 'antlr4';
 import { ParseTreeWalker } from 'antlr4/tree/Tree';
 
+import { isFlowBaseAnnotation } from '@babel/types';
+import * as merge from 'deepmerge';
 import { parseFirebaseRulesFromString } from '..';
 import { FirebaseRulesListener } from '../parser/FirebaseRulesListener';
 import {
@@ -18,28 +20,50 @@ import {
   FirebaseRulesParser,
   FunctionCallContext,
   FunctionDeclarationContext,
-  GetExpressionContext,
+  GetPathExpressionVariableContext,
+  GetPathVariableContext,
   LogicalExpressionContext,
   MatcherContext,
   NamespaceContext,
   NullExpressionContext,
   NumberExpressionContext,
   ObjectReferenceContext,
-  ObjectReferenceExpressionContext,
   PathVariableContext,
+  RuleFunctionCallContext,
   StringExpressionContext,
   UnaryExpressionContext,
 } from '../parser/FirebaseRulesParser';
 import { FirebasePathAccessRights } from './FirebasePathAccessRights';
 import { defaultFirestoreRequest, MockFirestoreRequest } from './MockFirestoreRequest';
 import { defaultFirestoreResource, MockFirestoreResource } from './MockFirestoreResource';
-import { MatchPattern } from './utils/patternMatch';
+import { MatchParams, MatchPattern } from './utils/patternMatch';
 
 export type AllowKey = 'create' | 'read' | 'write' | 'update' | 'list' | 'delete';
 
-export interface ExecutorContext {
+export interface MockResource {
+  data: any;
+  id: string;
+}
+export interface FirebaseRulesContext {
   auth: any;
   resource: any;
+  matchParams?: MatchParams;
+
+  /**
+   * Called when rule execution will trigger `exists(...)` -call.
+   *
+   * @memberof ExecutorContext
+   * @returns true, if a document exists within a given path
+   */
+  onExistsCall?: (path: string) => boolean;
+
+  /**
+   * Called when rule execution will trigger `get(...)` -call.
+   *
+   * @memberof ExecutorContext
+   * @returns Document
+   */
+  onGetCall?: (path: string) => undefined | MockResource;
 }
 
 export interface AllowRule {
@@ -48,60 +72,7 @@ export interface AllowRule {
   if: ExpressionCallback;
 }
 
-export type ExpressionCallback = (context: ExecutorContext) => any;
-
-export class ExpressionTreeLevel {
-  private executor: ExpressionCallback;
-
-  public get count(): number {
-    return this._callbacks.length;
-  }
-  private _callbacks: ExpressionCallback[] = [];
-
-  public get callbacks(): ExpressionCallback[] {
-    return this._callbacks;
-  }
-  constructor(public execute: (treeLevel: ExpressionTreeLevel) => any, public ruleContext?: ParserRuleContext) {}
-
-  public setExecutor(executor: ExpressionCallback) {
-    this.executor = executor;
-  }
-  public getCallback = (index: number): ExpressionCallback => {
-    return this._callbacks[index];
-  }
-
-  public addExpressionCallback = (callback: ExpressionCallback): void => {
-    this._callbacks.push(callback);
-  }
-}
-
-type ExpressionContextCallback = (callback: ExpressionCallback) => void;
-
-export class ExpressionExecutor {
-  private _stack: ExpressionTreeLevel[] = [];
-
-  constructor() {
-    const root = new ExpressionTreeLevel(level => level.callbacks[0]);
-    this._stack.push(root);
-  }
-
-  public pushContext = (treeLevel: ExpressionTreeLevel): void => {
-    this._stack.push(treeLevel);
-  }
-  public popContext = (): void => {
-    this._stack.pop();
-  }
-
-  public execute = (context: ExecutorContext): any => {
-    const callback = this._stack[0].getCallback(0);
-    return callback(context);
-  }
-
-  public setResult = (callback: ExpressionCallback): void => {
-    const leaf = this._stack[this._stack.length - 1];
-    leaf.addExpressionCallback(callback);
-  }
-}
+export type ExpressionCallback = (context: FirebaseRulesContext) => any;
 
 enum StackItemType {
   ALLOW = 'allow',
@@ -133,11 +104,100 @@ interface Closure {
   parent?: Closure;
 }
 
-interface FunctionDesc {
-  callback: (context: ExecutorContext, args: any[]) => any;
+interface FunctionDescriptor {
+  callback: (context: FirebaseRulesContext, args: any[]) => any;
   argNames: string[];
 }
-export class RulesParser extends FirebaseRulesListener {
+
+export const defaultFirebaseReulesContext: FirebaseRulesContext = {
+  auth: merge(defaultFirestoreRequest.auth, {}),
+  resource: merge(defaultFirestoreResource, {}),
+};
+
+// tslint:disable-next-line: jsdoc-format
+/**
+ * Create a default firebare rule context to be used when calling rules rights. 
+ * 
+ * Function uses deep merge, so you can set needed values in sub objects like,
+ *  ```typescript
+ createFirebaseRulesContext({
+  auth: {
+    uid: '123'
+  }
+});
+ ```
+ * This will override only the uid property and will leave other properties intact.
+ *
+ * @export
+ * @param {Partial<FirebaseRulesContext>} [overrides] Values, to be overrided from default values. 
+ * @param {boolean} authenticated When true, a default mock user info is given for context. Default value is `false`.
+ * @returns {FirebaseRulesContext}
+ */
+export function createFirebaseRulesContext(
+  overrides?: Partial<FirebaseRulesContext>,
+  authenticated: boolean = false
+): FirebaseRulesContext {
+  const context = merge(
+    defaultFirebaseReulesContext,
+    authenticated
+      ? {}
+      : {
+          auth: {
+            uid: null,
+            email: null,
+          },
+        }
+  );
+  return overrides ? merge(context, overrides) : context;
+}
+
+export default class RulesParserFacade {
+  private _parser: RulesParser;
+
+  public get request(): MockFirestoreRequest {
+    return this._parser.request;
+  }
+
+  public set request(value: MockFirestoreRequest) {
+    this._parser.request = value;
+  }
+  public get resource(): MockFirestoreResource {
+    return this._parser.resource;
+  }
+
+  public set resource(value: MockFirestoreResource) {
+    this._parser.resource = value;
+  }
+  /**
+   * Get the namespace used in rules -file
+   *
+   * @readonly
+   * @memberof RulesParser
+   */
+  public get namespace() {
+    return this._parser.namespace;
+  }
+
+  constructor() {
+    this._parser = new RulesParser();
+  }
+
+  public init = (rulesFile: string): RulesParserFacade => {
+    this._parser.init(rulesFile);
+    return this;
+  }
+
+  /**
+   * Elaborate access rights for given path within given context
+   *
+   * @memberof RulesParser
+   */
+  public getRightsForPath = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
+    return this._parser.getRightsForPath(path, context);
+  }
+}
+
+class RulesParser extends FirebaseRulesListener {
   public get request(): MockFirestoreRequest {
     return this._request;
   }
@@ -164,8 +224,6 @@ export class RulesParser extends FirebaseRulesListener {
   private _request: MockFirestoreRequest = defaultFirestoreRequest;
   private _resource: MockFirestoreResource = defaultFirestoreResource;
   private allowRules: AllowRule[] = [];
-
-  // private activeExpression: ExpressionExecutor | undefined;
 
   private stack: StackItem[] = [];
   private closure: Closure = {
@@ -250,14 +308,17 @@ export class RulesParser extends FirebaseRulesListener {
    *
    * @memberof RulesParser
    */
-  public getRightsForPath = (path: string, context: ExecutorContext): FirebasePathAccessRights => {
+  public getRightsForPath = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
     this.closure.self.request = this.request;
     this.closure.self.resource = this.resource;
 
     for (const allowRule of this.allowRules) {
-      if (allowRule.pattern.match(path)) {
+      const match = allowRule.pattern.match(path);
+      if (match) {
         const allowKeys = allowRule.allowKeys;
         const rights: FirebasePathAccessRights = {};
+
+        context.matchParams = match;
 
         const hasAccess = allowRule.if ? allowRule.if(context) : true;
         for (const key of allowKeys) {
@@ -274,7 +335,7 @@ export class RulesParser extends FirebaseRulesListener {
   }
 
   public enterMatcher = (ctx: MatcherContext) => {
-    // matcher will only define the place in databse tree where operatation are targeted
+    // matcher will only define the place in database tree where operatation are targeted
 
     this.closure = {
       self: {},
@@ -302,8 +363,6 @@ export class RulesParser extends FirebaseRulesListener {
   public enterAllow = (ctx: AllowContext) => {
     const path = this.getCurrentPath();
     const pattern = new MatchPattern(path);
-
-    // const executor = new ExpressionExecutor();
 
     const currentAllowRule = {
       pattern,
@@ -368,7 +427,6 @@ export class RulesParser extends FirebaseRulesListener {
   public exitUnaryExpression = (ctx: UnaryExpressionContext) => {
     const value = this.stack.pop();
     // toto undefined
-
     const operator = ctx.getChild(0).symbol.text;
 
     this.stack.push({
@@ -378,27 +436,22 @@ export class RulesParser extends FirebaseRulesListener {
     });
   }
 
-  public exitGetExpression = (ctx: GetExpressionContext) => {
-    this.stack.push({
-      type: StackItemType.GET,
-      debug: ctx.getText(),
-      obj: ctx.getText(),
-    });
-  }
-
   public enterFunctionCall = (ctx: FunctionCallContext) => {
     const functionName = ctx.getChild(0).getText();
 
     const argCallbacks: ExpressionCallback[] = [];
-
+    const fieldRefs: any[] = [];
     const closure = this.closure;
 
     this.stack.push({
       type: StackItemType.FUNCTION,
       debug: ctx.getText(),
-      obj: argCallbacks,
+      obj: {
+        callbacks: argCallbacks,
+        fieldRefs,
+      },
       callback: context => {
-        const fun = this.peekClosureElement(closure, functionName) as FunctionDesc;
+        const fun = this.peekClosureElement(closure, functionName, context) as FunctionDescriptor;
         if (!fun) {
           throwError(
             `Function with name ${functionName} was not found. Please, make sure that the function name is correctly spelled and it is available in this scope.`,
@@ -408,11 +461,21 @@ export class RulesParser extends FirebaseRulesListener {
         const args: any[] = [];
         let index = 0;
         for (const callback of argCallbacks) {
-          const value = callback(context);
-          args.push(value);
-          this.closure.self[fun.argNames[index++]] = value;
+          const callbackResult = callback(context);
+          args.push(callbackResult);
+          this.closure.self[fun.argNames[index++]] = callbackResult;
         }
-        return fun.callback(context, args);
+        let value = fun.callback(context, args);
+
+        if (fieldRefs.length > 0) {
+          value = this.getFieldValueFromObject(context, value, fieldRefs, 0);
+          if (value) {
+            return value;
+          }
+          throwError(`Null value error, field ${ctx.getText()} do not exists`, ctx);
+        }
+
+        return value;
       },
     });
   }
@@ -421,7 +484,7 @@ export class RulesParser extends FirebaseRulesListener {
     const expression = this.stack.pop();
     const item = this.stackPeek();
 
-    const argCallbacks = item.obj as ExpressionCallback[];
+    const argCallbacks = item.obj.callbacks as ExpressionCallback[];
     if (!item.obj) {
       throwError('Allow key defined while no allow operation is active.', ctx);
       return;
@@ -460,7 +523,7 @@ export class RulesParser extends FirebaseRulesListener {
       return;
     }
 
-    const funDesc: FunctionDesc = {
+    const funDesc: FunctionDescriptor = {
       callback: (context: any, args: any[]) => {
         return item.callback!(context);
       },
@@ -509,32 +572,117 @@ export class RulesParser extends FirebaseRulesListener {
       obj: fieldRefs,
       debug: ctx.getText(),
       callback: context => {
-        const refValue = (value: string | ExpressionCallback) => {
-          if (typeof value === 'string') {
-            return value;
-          }
-          return value(context);
-        };
+        const objectIdentifier = this.refValue(context, fieldRefs[0]);
+        let obj = this.peekClosureElement(this.closure, objectIdentifier, context);
 
-        const objectIdentifier = refValue(fieldRefs[0]);
-        let obj = this.peekClosureElement(this.closure, objectIdentifier);
-
-        for (let i = 1; i < fieldRefs.length; i++) {
-          if (!obj) {
-            return undefined;
-          }
-          const value = refValue(fieldRefs[i]);
-          obj = obj[value];
+        obj = this.getFieldValueFromObject(context, obj, fieldRefs, 1);
+        if (obj || obj === '') {
+          return obj;
         }
-        return obj;
+        throwError(`Null value error, field ${ctx.getText()} do not exists`, ctx);
       },
     });
+  }
+
+  public enterRuleFunctionCall = (ctx: RuleFunctionCallContext) => {
+    const functionName = ctx.getChild(0).getText();
+
+    const argCallbacks: ExpressionCallback[] = [];
+    const fieldRefs: any[] = [];
+
+    this.stack.push({
+      type: StackItemType.FUNCTION,
+      debug: ctx.getText(),
+      obj: {
+        callbacks: argCallbacks,
+        fieldRefs,
+      },
+      callback: context => {
+        let fun;
+        switch (functionName) {
+          case 'get':
+            fun =
+              context.onGetCall ||
+              (() => {
+                // tslint:disable-next-line
+                throwError(
+                  'get -function called but there is no onGetCall handler degined on context. Please override onGetCall trigger on context.',
+                  ctx
+                );
+              });
+            break;
+
+          case 'exists':
+            fun =
+              context.onExistsCall ||
+              // tslint:disable-next-line
+              (() => {
+                throwError(
+                  'exists -function called but there is no onGetCall handler degined on context. Please override onExistCall trigger on context.',
+                  ctx
+                );
+              });
+            break;
+          default:
+            throwError(`Unidentified function ${functionName}`, ctx);
+            return;
+        }
+
+        let path: string = '';
+        for (const callback of argCallbacks) {
+          const callbackResult = typeof callback === 'string' ? callback : callback(context);
+          path += '/' + callbackResult;
+        }
+        let value = fun(path);
+
+        if (fieldRefs.length > 0) {
+          value = this.getFieldValueFromObject(context, value, fieldRefs, 0);
+          if (value) {
+            return value;
+          }
+          throwError(`Null value error, field ${ctx.getText()} do not exists`, ctx);
+        }
+        return value;
+      },
+    });
+  }
+
+  public exitGetPathExpressionVariable = (ctx: GetPathExpressionVariableContext) => {
+    const expression = this.stack.pop();
+    const item = this.stackPeek();
+
+    const argCallbacks = item.obj.callbacks;
+    if (!item.obj) {
+      throwError('Allow key defined while no allow operation is active.', ctx);
+      return;
+    }
+    argCallbacks.push(expression!.callback!);
+  }
+
+  public exitGetPathVariable = (ctx: GetPathVariableContext) => {
+    const item = this.stackPeek();
+    const value = ctx.getText();
+    const argCallbacks = item.obj.callbacks;
+    if (!item.obj) {
+      throwError('Allow key defined while no allow operation is active.', ctx);
+      return;
+    }
+    argCallbacks.push(value);
   }
 
   public exitFieldReferenceWithIdentifier = (ctx: FieldReferenceWithIdentifierContext) => {
     const item = this.stackPeek();
     const fieldName = ctx.getChild(1).getText();
-    item.obj.push(fieldName);
+    switch (item.type) {
+      case StackItemType.OBJECT_REFERENCE:
+        item.obj.push(fieldName);
+        break;
+      case StackItemType.FUNCTION:
+        item.obj.fieldRefs.push(fieldName);
+        break;
+      default:
+        throwError(`Unidentified case for field reference ${item.type}`, ctx);
+    }
   }
 
   public exitFieldReferenceWithMemberRef = (ctx: FieldReferenceWithMemberRefContext) => {
@@ -545,6 +693,29 @@ export class RulesParser extends FirebaseRulesListener {
     }
     const item = this.stackPeek();
     item.obj.push(expression.callback);
+  }
+
+  private refValue = (context: FirebaseRulesContext, value: string | ExpressionCallback) => {
+    if (typeof value === 'string') {
+      return value;
+    }
+    return value(context);
+  }
+
+  private getFieldValueFromObject = (
+    context: FirebaseRulesContext,
+    obj: any,
+    fieldRefs: Array<string | ExpressionCallback>,
+    startIndex: number
+  ) => {
+    for (let i = startIndex; i < fieldRefs.length; i++) {
+      if (!obj) {
+        break;
+      }
+      const value = this.refValue(context, fieldRefs[i]);
+      obj = obj[value];
+    }
+    return obj;
   }
 
   private parseSourceToLines = (source: string): string[] => source.split('\n');
@@ -662,7 +833,7 @@ export class RulesParser extends FirebaseRulesListener {
     return this.stack[this.stack.length - 1];
   }
 
-  private peekClosureElement(closure: Closure, fieldName: string) {
+  private peekClosureElement(closure: Closure, fieldName: string, context: FirebaseRulesContext) {
     let c: Closure | undefined = closure;
     do {
       const obj = c.self[fieldName];
@@ -671,8 +842,8 @@ export class RulesParser extends FirebaseRulesListener {
       }
       c = c.parent;
     } while (c);
-
-    return undefined;
+    // return a value for match params if found
+    return context.matchParams ? context.matchParams[fieldName] : undefined;
   }
 
   private handleValueExpression(ctx: NumberExpressionContext | StringExpressionContext) {
