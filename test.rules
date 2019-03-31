@@ -1,7 +1,7 @@
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /organizations/{oid} {
-      allow read, write: if (10+(-5)) == 5;
+    match /organizations/{doc} {
+      allow read: if request.auth.uid == "ABC";     
     }
   }
 }

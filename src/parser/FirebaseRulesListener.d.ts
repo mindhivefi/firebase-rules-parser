@@ -21,11 +21,21 @@ import {PathVariableReplaceContext} from './FirebaseRulesParser';
 
 import {PathVariableContext} from './FirebaseRulesParser';
 
+import {ArgContext} from './FirebaseRulesParser';
+
 import {ArgumentsContext} from './FirebaseRulesParser';
+
+import {ArgDeclarationContext} from './FirebaseRulesParser';
+
+import {ArgDeclarationsContext} from './FirebaseRulesParser';
 
 import {FunctionDeclarationContext} from './FirebaseRulesParser';
 
+import {FieldReferenceContext} from './FirebaseRulesParser';
+
 import {ExpressionContext} from './FirebaseRulesParser';
+
+import {ObjectReferenceContext} from './FirebaseRulesParser';
 
 import {GetContext} from './FirebaseRulesParser';
 
@@ -79,17 +89,37 @@ export declare class FirebaseRulesListener implements ParseTreeListener {
     
     public exitPathVariable(ctx: PathVariableContext): void;
     
+    public enterArg(ctx: ArgContext): void;
+    
+    public exitArg(ctx: ArgContext): void;
+    
     public enterArguments(ctx: ArgumentsContext): void;
     
     public exitArguments(ctx: ArgumentsContext): void;
+    
+    public enterArgDeclaration(ctx: ArgDeclarationContext): void;
+    
+    public exitArgDeclaration(ctx: ArgDeclarationContext): void;
+    
+    public enterArgDeclarations(ctx: ArgDeclarationsContext): void;
+    
+    public exitArgDeclarations(ctx: ArgDeclarationsContext): void;
     
     public enterFunctionDeclaration(ctx: FunctionDeclarationContext): void;
     
     public exitFunctionDeclaration(ctx: FunctionDeclarationContext): void;
     
+    public enterFieldReference(ctx: FieldReferenceContext): void;
+    
+    public exitFieldReference(ctx: FieldReferenceContext): void;
+    
     public enterExpression(ctx: ExpressionContext): void;
     
     public exitExpression(ctx: ExpressionContext): void;
+    
+    public enterObjectReference(ctx: ObjectReferenceContext): void;
+    
+    public exitObjectReference(ctx: ObjectReferenceContext): void;
     
     public enterGet(ctx: GetContext): void;
     

@@ -14,9 +14,7 @@ export declare class ServiceContext extends ParserRuleContext {
 
 export declare class NamespaceContext extends ParserRuleContext {
     
-    public Identifier(): TerminalNode;
-    
-    public ObjectReference(): TerminalNode;
+    public objectReference(): ObjectReferenceContext;
     
 }
 
@@ -92,8 +90,6 @@ export declare class PathVariableReplaceContext extends ParserRuleContext {
     
     public Number(): TerminalNode;
     
-    public ObjectReference(): TerminalNode;
-    
 }
 
 export declare class PathVariableContext extends ParserRuleContext {
@@ -106,7 +102,23 @@ export declare class PathVariableContext extends ParserRuleContext {
     
 }
 
+export declare class ArgContext extends ParserRuleContext {
+    
+    public expression(): ExpressionContext;
+    
+}
+
 export declare class ArgumentsContext extends ParserRuleContext {
+    
+}
+
+export declare class ArgDeclarationContext extends ParserRuleContext {
+    
+    public Identifier(): TerminalNode;
+    
+}
+
+export declare class ArgDeclarationsContext extends ParserRuleContext {
     
 }
 
@@ -118,7 +130,7 @@ export declare class FunctionDeclarationContext extends ParserRuleContext {
     
     public BracketOpen(): TerminalNode;
     
-    public arguments(): ArgumentsContext;
+    public argDeclarations(): ArgDeclarationsContext;
     
     public BracketClose(): TerminalNode;
     
@@ -132,6 +144,28 @@ export declare class FunctionDeclarationContext extends ParserRuleContext {
     
 }
 
+export declare class FieldReferenceWithIdentifierContext extends ParserRuleContext {
+    
+    public Dot(): TerminalNode;
+    
+    public Identifier(): TerminalNode;
+    
+}
+
+export declare class FieldReferenceWithMemberRefContext extends ParserRuleContext {
+    
+    public SquareBracketOpen(): TerminalNode;
+    
+    public expression(): ExpressionContext;
+    
+    public SquareBracketClose(): TerminalNode;
+    
+}
+
+export declare class FieldReferenceContext extends ParserRuleContext {
+    
+}
+
 export declare class NumberExpressionContext extends ParserRuleContext {
     
     public Number(): TerminalNode;
@@ -140,7 +174,7 @@ export declare class NumberExpressionContext extends ParserRuleContext {
 
 export declare class ObjectReferenceExpressionContext extends ParserRuleContext {
     
-    public ObjectReference(): TerminalNode;
+    public objectReference(): ObjectReferenceContext;
     
 }
 
@@ -151,12 +185,6 @@ export declare class ParenthesisExpressionContext extends ParserRuleContext {
     public expression(): ExpressionContext;
     
     public BracketClose(): TerminalNode;
-    
-}
-
-export declare class IdentifierReferenceExpressionContext extends ParserRuleContext {
-    
-    public Identifier(): TerminalNode;
     
 }
 
@@ -250,6 +278,12 @@ export declare class UnaryExpressionContext extends ParserRuleContext {
     
 }
 
+export declare class ObjectReferenceContext extends ParserRuleContext {
+    
+    public Identifier(): TerminalNode;
+    
+}
+
 export declare class GetContext extends ParserRuleContext {
     
     public Get(): TerminalNode;
@@ -271,6 +305,8 @@ export declare class GetContext extends ParserRuleContext {
     public String(): TerminalNode;
     
     public Number(): TerminalNode;
+    
+    public objectReference(): ObjectReferenceContext;
     
 }
 
@@ -326,9 +362,19 @@ export declare class FirebaseRulesParser extends Parser {
 
     public pathVariable(): PathVariableContext;
 
+    public arg(): ArgContext;
+
     public arguments(): ArgumentsContext;
 
+    public argDeclaration(): ArgDeclarationContext;
+
+    public argDeclarations(): ArgDeclarationsContext;
+
     public functionDeclaration(): FunctionDeclarationContext;
+
+    public fieldReference(): FieldReferenceContext;
+
+    public objectReference(): ObjectReferenceContext;
 
     public get(): GetContext;
 

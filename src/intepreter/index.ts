@@ -6,25 +6,33 @@ import { FirebaseRulesListener } from '../parser/FirebaseRulesListener';
 import {
   AllowContext,
   AllowKeyContext,
+  ArgContext,
+  ArgDeclarationContext,
   ArithmeticExpressionContext,
   BinaryExpressionContext,
   BooleanExpressionContext,
   CompareExpressionContext,
   ExpressionContext,
+  FieldReferenceWithIdentifierContext,
+  FieldReferenceWithMemberRefContext,
   FirebaseRulesParser,
-  FunctionExpressionContext,
+  FunctionCallContext,
+  FunctionDeclarationContext,
   GetExpressionContext,
   LogicalExpressionContext,
   MatcherContext,
   NamespaceContext,
   NullExpressionContext,
   NumberExpressionContext,
-  // ParenthesisExpressionContext,
+  ObjectReferenceContext,
+  ObjectReferenceExpressionContext,
   PathVariableContext,
   StringExpressionContext,
   UnaryExpressionContext,
 } from '../parser/FirebaseRulesParser';
 import { FirebasePathAccessRights } from './FirebasePathAccessRights';
+import { defaultFirestoreRequest, MockFirestoreRequest } from './MockFirestoreRequest';
+import { defaultFirestoreResource, MockFirestoreResource } from './MockFirestoreResource';
 import { MatchPattern } from './utils/patternMatch';
 
 export type AllowKey = 'create' | 'read' | 'write' | 'update' | 'list' | 'delete';
@@ -102,8 +110,10 @@ enum StackItemType {
   COMPARE = 'compare',
   EXPRESSION = 'expression',
   FUNCTION = 'function',
+  FUNCTION_DECLARATION = 'fun-dec',
   GET = 'get',
   LOGICAL = 'logical',
+  OBJECT_REFERENCE = 'objectref',
   PARENTHESIS = 'parenthesis',
   RESOLVED = 'resolved',
   UNARY = 'unary',
@@ -118,7 +128,30 @@ interface StackItem {
   ctx?: any;
 }
 
+interface Closure {
+  self: any;
+  parent?: Closure;
+}
+
+interface FunctionDesc {
+  callback: (context: ExecutorContext, args: any[]) => any;
+  argNames: string[];
+}
 export class RulesParser extends FirebaseRulesListener {
+  public get request(): MockFirestoreRequest {
+    return this._request;
+  }
+
+  public set request(value: MockFirestoreRequest) {
+    this._request = value;
+  }
+  public get resource(): MockFirestoreResource {
+    return this._resource;
+  }
+
+  public set resource(value: MockFirestoreResource) {
+    this._resource = value;
+  }
   /**
    * Get the namespace used in rules -file
    *
@@ -128,17 +161,27 @@ export class RulesParser extends FirebaseRulesListener {
   public get namespace() {
     return this._namespace;
   }
+  private _request: MockFirestoreRequest = defaultFirestoreRequest;
+  private _resource: MockFirestoreResource = defaultFirestoreResource;
   private allowRules: AllowRule[] = [];
 
   // private activeExpression: ExpressionExecutor | undefined;
 
   private stack: StackItem[] = [];
+  private closure: Closure = {
+    self: {},
+  };
 
   private pathElements: string[] = [];
   private _namespace: string;
   private _parser?: FirebaseRulesParser;
 
   public init = (rulesFile: string): RulesParser => {
+    this.stack = [];
+    this.closure = {
+      self: {},
+    };
+
     this._parser = parseFirebaseRulesFromString(rulesFile);
     this._parser.addErrorListener({
       syntaxError: (
@@ -150,7 +193,13 @@ export class RulesParser extends FirebaseRulesListener {
         e: any
       ) => {
         // tslint:disable-next-line: no-console
-        console.error(msg);
+        console.error(`${msg} at line ${line} column ${column}`);
+        const source = this.parseSourceToLines(rulesFile);
+        // tslint:disable-next-line: no-console
+        console.error(source[line - 1]);
+        const spaces = ' '.repeat(column - 1);
+        // tslint:disable-next-line: no-console
+        console.error(spaces + '^');
       },
       reportAmbiguity: (
         recognizer: Recognizer,
@@ -162,7 +211,7 @@ export class RulesParser extends FirebaseRulesListener {
         configs: any
       ) => {
         // tslint:disable-next-line: no-console
-        console.error('Ambiguity: ' + ambigAlts);
+        console.error(`Ambiguity: ' + ${ambigAlts} at line ${startIndex} column ${stopIndex}`);
       },
       reportAttemptingFullContext: (
         recognizer: Recognizer,
@@ -196,7 +245,15 @@ export class RulesParser extends FirebaseRulesListener {
     return 0;
   }
 
+  /**
+   * Elaborate access rights for given path within given context
+   *
+   * @memberof RulesParser
+   */
   public getRightsForPath = (path: string, context: ExecutorContext): FirebasePathAccessRights => {
+    this.closure.self.request = this.request;
+    this.closure.self.resource = this.resource;
+
     for (const allowRule of this.allowRules) {
       if (allowRule.pattern.match(path)) {
         const allowKeys = allowRule.allowKeys;
@@ -219,11 +276,15 @@ export class RulesParser extends FirebaseRulesListener {
   public enterMatcher = (ctx: MatcherContext) => {
     // matcher will only define the place in databse tree where operatation are targeted
 
+    this.closure = {
+      self: {},
+      parent: this.closure,
+    };
+
     if (ctx.getChildCount() > 0) {
       const path = ctx.getChild(1);
       const pathElement = this.generatePath(path);
       this.pathElements.push(pathElement);
-      const p = this.getCurrentPath();
     } else {
       throw new Error('Internal error: match -element without child elements.');
     }
@@ -231,6 +292,11 @@ export class RulesParser extends FirebaseRulesListener {
 
   public exitMatcher = (ctx: MatcherContext) => {
     this.pathElements.pop();
+    if (this.closure.parent) {
+      this.closure = this.closure.parent;
+    } else {
+      throwError('Internal error, running out of closure scope', ctx);
+    }
   }
 
   public enterAllow = (ctx: AllowContext) => {
@@ -283,65 +349,6 @@ export class RulesParser extends FirebaseRulesListener {
     currentAllowRule.allowKeys.push(ctx.getText() as AllowKey);
   }
 
-  // public enterParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
-  //   this.stack.push({
-  //     type: StackItemType.PARENTHESIS,
-  //     debug: ctx.getText(),
-  //     ctx,
-  //   });
-  // }
-
-  // public exitParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
-  //   const items: StackItem[] = [];
-  //   do {
-  //     const item = this.stack.pop();
-  //     if (!item || item.ctx === ctx) {
-  //       break;
-  //     }
-  //     items.push(item);
-  //   } while (true);
-  //   this.resolveExpressions(ctx, items);
-  // }
-
-  // public enterExpression = (ctx: ExpressionContext) => {
-  //   // this.activeExpression = this.activeExpression || new ExpressionExecutor();
-  //   this.stack.push({
-  //     type: StackItemType.EXPRESSION,
-  //     debug: ctx.getText(),
-  //     ctx,
-  //   });
-  // }
-
-  // public exitExpression = (ctx: ExpressionContext) => {
-  //   const items: StackItem[] = [];
-
-  //   do {
-  //     const item = this.stack.pop();
-  //     if (!item || item.ctx === ctx) {
-  //       break;
-  //     }
-  //     items.push(item);
-  //   } while (true);
-
-  //   this.resolveExpressions(ctx, items);
-  // }
-
-  public exitBooleanExpression = (ctx: BooleanExpressionContext) => {
-    this.stack.push({
-      type: StackItemType.VALUE,
-      callback: () => JSON.parse(ctx.getText()),
-      debug: ctx.getText(),
-    });
-  }
-
-  public exitNullExpression = (ctx: NullExpressionContext) => {
-    this.stack.push({
-      type: StackItemType.VALUE,
-      callback: () => null,
-      debug: ctx.getText(),
-    });
-  }
-
   public exitCompareExpression = (ctx: CompareExpressionContext) => {
     this.handleBinaryOperation(StackItemType.COMPARE, ctx);
   }
@@ -358,9 +365,6 @@ export class RulesParser extends FirebaseRulesListener {
     this.handleBinaryOperation(StackItemType.BINARY, ctx);
   }
 
-  // public exitParenthesisExpression = (ctx: ParenthesisExpressionContext) => {
-  //   const value = this.stack.pop();
-  // }
   public exitUnaryExpression = (ctx: UnaryExpressionContext) => {
     const value = this.stack.pop();
     // toto undefined
@@ -382,32 +386,168 @@ export class RulesParser extends FirebaseRulesListener {
     });
   }
 
-  public exitFunctionExpression = (ctx: FunctionExpressionContext) => {
-    // TODO expression
+  public enterFunctionCall = (ctx: FunctionCallContext) => {
+    const functionName = ctx.getChild(0).getText();
+
+    const argCallbacks: ExpressionCallback[] = [];
+
+    const closure = this.closure;
+
     this.stack.push({
       type: StackItemType.FUNCTION,
       debug: ctx.getText(),
-      obj: ctx.getText(),
+      obj: argCallbacks,
+      callback: context => {
+        const fun = this.peekClosureElement(closure, functionName) as FunctionDesc;
+        if (!fun) {
+          throwError(
+            `Function with name ${functionName} was not found. Please, make sure that the function name is correctly spelled and it is available in this scope.`,
+            ctx
+          );
+        }
+        const args: any[] = [];
+        let index = 0;
+        for (const callback of argCallbacks) {
+          const value = callback(context);
+          args.push(value);
+          this.closure.self[fun.argNames[index++]] = value;
+        }
+        return fun.callback(context, args);
+      },
     });
+  }
+
+  public exitArg = (ctx: ArgContext) => {
+    const expression = this.stack.pop();
+    const item = this.stackPeek();
+
+    const argCallbacks = item.obj as ExpressionCallback[];
+    if (!item.obj) {
+      throwError('Allow key defined while no allow operation is active.', ctx);
+      return;
+    }
+    argCallbacks.push(expression!.callback!);
+  }
+
+  public enterFunctionDeclaration = (ctx: FunctionDeclarationContext) => {
+    this.stack.push({
+      type: StackItemType.FUNCTION_DECLARATION,
+      callback: () => true,
+      obj: [],
+      debug: '',
+    });
+  }
+
+  public exitArgDeclaration = (ctx: ArgDeclarationContext) => {
+    const item = this.stackPeek();
+    item.obj.push(ctx.getText());
+  }
+
+  public exitFunctionDeclaration = (ctx: FunctionDeclarationContext) => {
+    const item = this.stack.pop();
+    const funDec = this.stack.pop();
+
+    const argNames = funDec!.obj;
+
+    if (!item) {
+      throwError(`Function not found from stack`, ctx);
+      return;
+    }
+    const functionName = ctx.getChild(1).symbol.text;
+
+    if (this.closure.self[functionName]) {
+      throwError(`Function with name ${functionName} already exists`, ctx);
+      return;
+    }
+
+    const funDesc: FunctionDesc = {
+      callback: (context: any, args: any[]) => {
+        return item.callback!(context);
+      },
+      argNames,
+    };
+    this.closure.self[functionName] = funDesc;
   }
 
   public exitNumberExpression = (ctx: NumberExpressionContext) => {
-    this.stack.push({
-      type: StackItemType.VALUE,
-      debug: ctx.getText(),
-
-      callback: () => JSON.parse(ctx.getText()),
-    });
+    this.handleValueExpression(ctx);
   }
 
   public exitStringExpression = (ctx: StringExpressionContext) => {
+    let value = ctx.getText();
+    value = value.substr(1, value.length - 2);
     this.stack.push({
       type: StackItemType.VALUE,
       debug: ctx.getText(),
-
-      callback: () => JSON.parse(ctx.getText()),
+      callback: () => value,
     });
   }
+
+  public exitBooleanExpression = (ctx: BooleanExpressionContext) => {
+    this.stack.push({
+      type: StackItemType.VALUE,
+      callback: () => JSON.parse(ctx.getText()),
+      debug: ctx.getText(),
+    });
+  }
+
+  public exitNullExpression = (ctx: NullExpressionContext) => {
+    this.stack.push({
+      type: StackItemType.VALUE,
+      callback: () => null,
+      debug: ctx.getText(),
+    });
+  }
+
+  public enterObjectReference = (ctx: ObjectReferenceContext) => {
+    const identifier = ctx.getChild(0).getText();
+
+    const fieldRefs = [identifier];
+
+    this.stack.push({
+      type: StackItemType.OBJECT_REFERENCE,
+      obj: fieldRefs,
+      debug: ctx.getText(),
+      callback: context => {
+        const refValue = (value: string | ExpressionCallback) => {
+          if (typeof value === 'string') {
+            return value;
+          }
+          return value(context);
+        };
+
+        const objectIdentifier = refValue(fieldRefs[0]);
+        let obj = this.peekClosureElement(this.closure, objectIdentifier);
+
+        for (let i = 1; i < fieldRefs.length; i++) {
+          if (!obj) {
+            return undefined;
+          }
+          const value = refValue(fieldRefs[i]);
+          obj = obj[value];
+        }
+        return obj;
+      },
+    });
+  }
+
+  public exitFieldReferenceWithIdentifier = (ctx: FieldReferenceWithIdentifierContext) => {
+    const item = this.stackPeek();
+    const fieldName = ctx.getChild(1).getText();
+    item.obj.push(fieldName);
+  }
+
+  public exitFieldReferenceWithMemberRef = (ctx: FieldReferenceWithMemberRefContext) => {
+    const expression = this.stack.pop();
+    if (!expression) {
+      throwError('Internal error, no expression found in memberRef', ctx);
+      return;
+    }
+    const item = this.stackPeek();
+    item.obj.push(expression.callback);
+  }
+
+  private parseSourceToLines = (source: string): string[] => source.split('\n');
 
   private generatePath = (path: any): string => {
     let result = '';
@@ -425,48 +565,6 @@ export class RulesParser extends FirebaseRulesListener {
     }
     return result;
   }
-
-  // private resolveExpressions = (ctx: any, items: StackItem[]) => {
-  //   switch (items.length) {
-  //     case 1:
-  //       this.stack.push({
-  //         type: StackItemType.RESOLVED,
-  //         callback: items[0].callback,
-  //         debug: 'resolved: ' + items[0].debug,
-  //       });
-  //       break;
-  //     case 2:
-  //       this.stack.push({
-  //         type: StackItemType.RESOLVED,
-  //         callback: this.resolveUnaryOperation(items, ctx),
-  //         debug: `resolved: ${items[1].obj} ${items[0].debug}`,
-  //       });
-
-  //       break;
-  //     case 3:
-  //       this.stack.push({
-  //         type: StackItemType.RESOLVED,
-  //         callback: this.resolveBinaryOperationOld(items, ctx),
-  //         debug: `resolved: ${items[2].debug} ${items[1].obj} ${items[0].debug}`,
-  //       });
-  //       break;
-
-  //     default:
-  //       // TODO check ternary operation
-  //       do {
-  //         // operations are resolved from left to right
-  //         const firstItems = items.splice(0, 3);
-  //         const callback = this.resolveBinaryOperationOld(firstItems, ctx);
-  //         items.unshift({
-  //           type: StackItemType.RESOLVED,
-  //           callback,
-  //           debug: `${firstItems[0].debug} ${firstItems[1].debug} ${firstItems[2].debug}`,
-  //         });
-  //       } while (items.length > 1);
-
-  //       throwError(`Unsupported number of expression arguments ${items.length}`, ctx);
-  //   }
-  // }
 
   private resolveUnaryOperation = (
     operation: string,
@@ -491,54 +589,6 @@ export class RulesParser extends FirebaseRulesListener {
       }
     };
   }
-
-  // private resolveBinaryOperationOld = (items: StackItem[], ctx: ExpressionContext): ExpressionCallback => {
-  //   const left = items[2];
-  //   const right = items[0];
-
-  //   if (!(right && left)) {
-  //     throwError(`Internal error`, ctx);
-  //   }
-
-  //   return context => {
-  //     const leftValue = left.callback!(context);
-  //     const rightValue = right.callback!(context);
-
-  //     const operator = items[1].obj;
-
-  //     switch (operator) {
-  //       case '<':
-  //         return leftValue < rightValue;
-  //       case '<=':
-  //         return leftValue <= rightValue;
-  //       case '==':
-  //         return leftValue === rightValue;
-  //       case '!=':
-  //         return leftValue !== rightValue;
-  //       case '>':
-  //         return leftValue > rightValue;
-  //       case '>=':
-  //         return leftValue >= rightValue;
-  //       case '+':
-  //         return leftValue + rightValue;
-  //       case '-':
-  //         return leftValue - rightValue;
-  //       case '*':
-  //         return leftValue * rightValue;
-  //       case '/':
-  //         return leftValue / rightValue;
-  //       case '&&':
-  //         return leftValue && rightValue;
-  //       case '||':
-  //         return leftValue || rightValue;
-  //       case '^':
-  //         return leftValue ^ rightValue;
-
-  //       default:
-  //         throw new Error(`Unidentified operator: ${operator} at line ${ctx.start.line} column ${ctx.start.start}.`);
-  //     }
-  //   };
-  // }
 
   private resolveBinaryOperation = (
     left: StackItem,
@@ -575,6 +625,8 @@ export class RulesParser extends FirebaseRulesListener {
           return leftValue * rightValue;
         case '/':
           return leftValue / rightValue;
+        case '%':
+          return leftValue % rightValue;
         case '&&':
           return leftValue && rightValue;
         case '||':
@@ -604,6 +656,32 @@ export class RulesParser extends FirebaseRulesListener {
     const service = parser.service();
 
     ParseTreeWalker.DEFAULT.walk(this, service);
+  }
+
+  private stackPeek() {
+    return this.stack[this.stack.length - 1];
+  }
+
+  private peekClosureElement(closure: Closure, fieldName: string) {
+    let c: Closure | undefined = closure;
+    do {
+      const obj = c.self[fieldName];
+      if (obj) {
+        return obj;
+      }
+      c = c.parent;
+    } while (c);
+
+    return undefined;
+  }
+
+  private handleValueExpression(ctx: NumberExpressionContext | StringExpressionContext) {
+    const value = JSON.parse(ctx.getText());
+    this.stack.push({
+      type: StackItemType.VALUE,
+      debug: ctx.getText(),
+      callback: () => value,
+    });
   }
 
   private handleBinaryOperation(type: StackItemType, ctx: ParserRuleContext) {
