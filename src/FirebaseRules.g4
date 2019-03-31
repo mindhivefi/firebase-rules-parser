@@ -1,11 +1,11 @@
 grammar FirebaseRules;
-/* This will be the entry point of our parser. */
+/* This will be the entry point of our parser.*/
 service: Service namespace namespaceBlock;
 
 /**
  * Namespace definition shown after service
  */
-namespace: Identifier | ObjectReference;
+namespace: objectReference;
 
 /**
  * Namespace block can only contain matchers, functions and comments
@@ -28,16 +28,25 @@ matcher: Match matchPath matchBlock;
 allow:
 	Allow allowKey (Comma allowKey)* (Colon If expression)? Semicolon;
 
-pathVariableReplace:
-	'$(' (Identifier | String | Number | ObjectReference) ')';
+pathVariableReplace: '$(' (Identifier | String | Number) ')';
 
 pathVariable: CurlyOpen Identifier ('=' '**')? CurlyClose;
 
-arguments: Identifier? (',' Identifier)*;
+arg: expression;
+
+arguments: arg? (',' arg)*;
+
+argDeclaration: Identifier;
+
+argDeclarations: argDeclaration? (',' argDeclaration)*;
 
 functionDeclaration:
-	Function Identifier BracketOpen arguments BracketClose CurlyOpen Return expression ';'
+	Function Identifier BracketOpen argDeclarations BracketClose CurlyOpen Return expression ';'
 		CurlyClose;
+
+fieldReference:
+	(Dot Identifier)									# fieldReferenceWithIdentifier
+	| (SquareBracketOpen expression SquareBracketClose)	# fieldReferenceWithMemberRef;
 
 expression:
 	Null # nullExpression
@@ -63,20 +72,25 @@ expression:
 	| String									# stringExpression
 	| Number									# numberExpression
 	| (True | False)							# booleanExpression
-	| ObjectReference							# objectReferenceExpression
+	| objectReference							# objectReferenceExpression
 	| get										# getExpression
 	| functionCall								# functionExpression
-	| Identifier								# identifierReferenceExpression
-	| BracketOpen expression BracketClose		# parenthesisExpression;
+	// | Identifier (fieldReference)*			# identifierReferenceExpression
+	| BracketOpen expression BracketClose # parenthesisExpression;
+
+objectReference: Identifier (fieldReference)*;
 
 get:
 	Get BracketOpen getPath BracketClose Dot (
-		(Identifier | ObjectReference) (
-			SquareBracketOpen (ObjectReference | String | Number) SquareBracketClose
+		(Identifier) (
+			SquareBracketOpen (String | Number | objectReference) SquareBracketClose
 		)?
 	);
 
-functionCall: Identifier BracketOpen arguments BracketClose;
+functionCall:
+	Identifier BracketOpen arguments BracketClose (
+		fieldReference
+	)*;
 
 getPath: (Slash (Identifier | pathVariableReplace))+;
 
@@ -143,13 +157,10 @@ Return: 'return';
 Null: 'null';
 Service: 'service';
 
-ObjectReference: Identifier ('.' Identifier)+;
-
 /* A number: can be an integer value, or a decimal value */
 Number: ('0' ..'9')+ ('.' ('0' ..'9')+)?;
 
-//String: '\'' ~('\'')*;
-String: '\'' (~'\'')* '\'';
+String: ('\'' (~'\'')* '\'') | ('"' (~'"')* '"');
 
 Identifier: ('a' ..'z' | 'A' ..'Z' | '_') (
 		'a' ..'z'

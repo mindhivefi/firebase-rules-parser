@@ -135,4 +135,112 @@ describe('Firebase Rules', () => {
       });
     });
   });
+
+  describe('Functions', () => {
+    it('will support function calls without arguments', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          function common() {
+            return true;
+          }
+          match /organizations/{doc} {
+            allow read: if common();     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+
+    it('will support function calls expressions in arguments', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          function common(value1, value2) {
+            return value1 == value2;
+          }
+          match /organizations/{doc} {
+            allow read: if common(2 + 4, 2 * 3);     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+  });
+
+  describe('Object references', () => {
+    it('will support basic request object reference calls', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if request.auth != null;     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+
+    it('will match given auth uid value (double quotes)', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if request.auth.uid == "ABC";     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      rules.request.auth.uid = 'ABC';
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+
+    it('will match given auth uid value (single quotes)', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if request.auth.uid == 'ABC';     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      rules.request.auth.uid = 'ABC';
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+    it('will match given auth uid value (empty string)', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if request.auth.uid == '';     
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      rules.request.auth.uid = '';
+      expect(rules.getRightsForPath(path, createContext())).toEqual({
+        read: true,
+      });
+    });
+  });
 });

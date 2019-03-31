@@ -101,6 +101,15 @@ FirebaseRulesListener.prototype.exitPathVariable = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#arg.
+FirebaseRulesListener.prototype.enterArg = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#arg.
+FirebaseRulesListener.prototype.exitArg = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#arguments.
 FirebaseRulesListener.prototype.enterArguments = function(ctx) {
 };
@@ -110,12 +119,48 @@ FirebaseRulesListener.prototype.exitArguments = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#argDeclaration.
+FirebaseRulesListener.prototype.enterArgDeclaration = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#argDeclaration.
+FirebaseRulesListener.prototype.exitArgDeclaration = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#argDeclarations.
+FirebaseRulesListener.prototype.enterArgDeclarations = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#argDeclarations.
+FirebaseRulesListener.prototype.exitArgDeclarations = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#functionDeclaration.
 FirebaseRulesListener.prototype.enterFunctionDeclaration = function(ctx) {
 };
 
 // Exit a parse tree produced by FirebaseRulesParser#functionDeclaration.
 FirebaseRulesListener.prototype.exitFunctionDeclaration = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#fieldReferenceWithIdentifier.
+FirebaseRulesListener.prototype.enterFieldReferenceWithIdentifier = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#fieldReferenceWithIdentifier.
+FirebaseRulesListener.prototype.exitFieldReferenceWithIdentifier = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#fieldReferenceWithMemberRef.
+FirebaseRulesListener.prototype.enterFieldReferenceWithMemberRef = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#fieldReferenceWithMemberRef.
+FirebaseRulesListener.prototype.exitFieldReferenceWithMemberRef = function(ctx) {
 };
 
 
@@ -143,15 +188,6 @@ FirebaseRulesListener.prototype.enterParenthesisExpression = function(ctx) {
 
 // Exit a parse tree produced by FirebaseRulesParser#parenthesisExpression.
 FirebaseRulesListener.prototype.exitParenthesisExpression = function(ctx) {
-};
-
-
-// Enter a parse tree produced by FirebaseRulesParser#identifierReferenceExpression.
-FirebaseRulesListener.prototype.enterIdentifierReferenceExpression = function(ctx) {
-};
-
-// Exit a parse tree produced by FirebaseRulesParser#identifierReferenceExpression.
-FirebaseRulesListener.prototype.exitIdentifierReferenceExpression = function(ctx) {
 };
 
 
@@ -242,6 +278,15 @@ FirebaseRulesListener.prototype.enterUnaryExpression = function(ctx) {
 
 // Exit a parse tree produced by FirebaseRulesParser#unaryExpression.
 FirebaseRulesListener.prototype.exitUnaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#objectReference.
+FirebaseRulesListener.prototype.enterObjectReference = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#objectReference.
+FirebaseRulesListener.prototype.exitObjectReference = function(ctx) {
 };
 
 

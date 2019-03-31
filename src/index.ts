@@ -23,9 +23,3 @@ export function parseFirebaseRulesFromString(rules: string): FirebaseRulesParser
   const tokenStream = new CommonTokenStream(lexer);
   return new FirebaseRulesParser(tokenStream);
 }
-
-// const parser = parseFirebaseRules(file);
-// const service = parser.service();
-// const namespace = service.namespace();
-// // tslint:disable-next-line: no-console
-// console.log(namespace.text);
