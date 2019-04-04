@@ -6,15 +6,13 @@ export declare class ServiceContext extends ParserRuleContext {
     
     public Service(): TerminalNode;
     
-    public namespace(): NamespaceContext;
+    public namespaceIdentifier(): NamespaceIdentifierContext;
     
     public namespaceBlock(): NamespaceBlockContext;
     
 }
 
-export declare class NamespaceContext extends ParserRuleContext {
-    
-    public objectReference(): ObjectReferenceContext;
+export declare class NamespaceIdentifierContext extends ParserRuleContext {
     
 }
 
@@ -105,6 +103,16 @@ export declare class ArgContext extends ParserRuleContext {
 }
 
 export declare class ArgumentsContext extends ParserRuleContext {
+    
+}
+
+export declare class MemberArgContext extends ParserRuleContext {
+    
+    public expression(): ExpressionContext;
+    
+}
+
+export declare class MemberArgumentsContext extends ParserRuleContext {
     
 }
 
@@ -200,6 +208,14 @@ export declare class IdContext extends ParserRuleContext {
     
 }
 
+export declare class ArrayExpressionContext extends ParserRuleContext {
+    
+    public SquareBracketOpen(): TerminalNode;
+    
+    public SquareBracketClose(): TerminalNode;
+    
+}
+
 export declare class NumberExpressionContext extends ParserRuleContext {
     
     public Number(): TerminalNode;
@@ -208,7 +224,7 @@ export declare class NumberExpressionContext extends ParserRuleContext {
 
 export declare class ObjectReferenceExpressionContext extends ParserRuleContext {
     
-    public objectReference(): ObjectReferenceContext;
+    public Identifier(): TerminalNode;
     
 }
 
@@ -235,6 +251,16 @@ export declare class ArithmeticExpressionContext extends ParserRuleContext {
     public ArithmeticExp(): TerminalNode;
     
     public ArithmeticModus(): TerminalNode;
+    
+}
+
+export declare class MemberReferenceExpressionContext extends ParserRuleContext {
+    
+    public expression(): ExpressionContext;
+    
+    public Dot(): TerminalNode;
+    
+    public id(): IdContext;
     
 }
 
@@ -302,6 +328,16 @@ export declare class NullExpressionContext extends ParserRuleContext {
     
 }
 
+export declare class RangeExpressionContext extends ParserRuleContext {
+    
+    public SquareBracketOpen(): TerminalNode;
+    
+    public SquareBracketClose(): TerminalNode;
+    
+    public Colon(): TerminalNode;
+    
+}
+
 export declare class UnaryExpressionContext extends ParserRuleContext {
     
     public expression(): ExpressionContext;
@@ -309,6 +345,22 @@ export declare class UnaryExpressionContext extends ParserRuleContext {
     public LogicalNot(): TerminalNode;
     
     public ArithmeticSub(): TerminalNode;
+    
+}
+
+export declare class MemberFunctionExpressionContext extends ParserRuleContext {
+    
+    public expression(): ExpressionContext;
+    
+    public Dot(): TerminalNode;
+    
+    public id(): IdContext;
+    
+    public BracketOpen(): TerminalNode;
+    
+    public memberArguments(): MemberArgumentsContext;
+    
+    public BracketClose(): TerminalNode;
     
 }
 
@@ -376,7 +428,7 @@ export declare class FirebaseRulesParser extends Parser {
     
     public service(): ServiceContext;
 
-    public namespace(): NamespaceContext;
+    public namespaceIdentifier(): NamespaceIdentifierContext;
 
     public namespaceBlock(): NamespaceBlockContext;
 
@@ -397,6 +449,10 @@ export declare class FirebaseRulesParser extends Parser {
     public arg(): ArgContext;
 
     public arguments(): ArgumentsContext;
+
+    public memberArg(): MemberArgContext;
+
+    public memberArguments(): MemberArgumentsContext;
 
     public argDeclaration(): ArgDeclarationContext;
 

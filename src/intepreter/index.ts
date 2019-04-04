@@ -1,8 +1,7 @@
 import { ParserRuleContext, Recognizer, Token } from 'antlr4';
 import { ParseTreeWalker } from 'antlr4/tree/Tree';
-
-import { isFlowBaseAnnotation } from '@babel/types';
 import * as merge from 'deepmerge';
+
 import { parseFirebaseRulesFromString } from '..';
 import { FirebaseRulesListener } from '../parser/FirebaseRulesListener';
 import {
@@ -11,6 +10,7 @@ import {
   ArgContext,
   ArgDeclarationContext,
   ArithmeticExpressionContext,
+  ArrayExpressionContext,
   BinaryExpressionContext,
   BooleanExpressionContext,
   CompareExpressionContext,
@@ -24,47 +24,27 @@ import {
   GetPathVariableContext,
   LogicalExpressionContext,
   MatcherContext,
-  NamespaceContext,
+  MemberFunctionExpressionContext,
+  MemberReferenceExpressionContext,
   NullExpressionContext,
   NumberExpressionContext,
   ObjectReferenceContext,
   PathVariableContext,
+  RangeExpressionContext,
   RuleFunctionCallContext,
+  ServiceContext,
   StringExpressionContext,
   UnaryExpressionContext,
 } from '../parser/FirebaseRulesParser';
 import { FirebasePathAccessRights } from './FirebasePathAccessRights';
+import { FirebaseRulesContext } from './FirebaseRulesContext';
+import { FirestoreRulesClosure } from './FirestoreRuleClosure';
 import { defaultFirestoreRequest, MockFirestoreRequest } from './MockFirestoreRequest';
 import { defaultFirestoreResource, MockFirestoreResource } from './MockFirestoreResource';
-import { MatchParams, MatchPattern } from './utils/patternMatch';
+import registerSystemFunctions from './system';
+import { MatchPattern } from './utils/patternMatch';
 
 export type AllowKey = 'create' | 'read' | 'write' | 'update' | 'list' | 'delete';
-
-export interface MockResource {
-  data: any;
-  id: string;
-}
-export interface FirebaseRulesContext {
-  auth: any;
-  resource: any;
-  matchParams?: MatchParams;
-
-  /**
-   * Called when rule execution will trigger `exists(...)` -call.
-   *
-   * @memberof ExecutorContext
-   * @returns true, if a document exists within a given path
-   */
-  onExistsCall?: (path: string) => boolean;
-
-  /**
-   * Called when rule execution will trigger `get(...)` -call.
-   *
-   * @memberof ExecutorContext
-   * @returns Document
-   */
-  onGetCall?: (path: string) => undefined | MockResource;
-}
 
 export interface AllowRule {
   pattern: MatchPattern;
@@ -72,17 +52,21 @@ export interface AllowRule {
   if: ExpressionCallback;
 }
 
-export type ExpressionCallback = (context: FirebaseRulesContext) => any;
+export type ExpressionCallback = (context: ExtendedFirebaseRulesContext, closure: FirestoreRulesClosure) => any;
 
 enum StackItemType {
   ALLOW = 'allow',
   ARITHMETIC = 'arithmetic',
+  ARRAY = 'array',
+  ARRAY_CELL_REF = 'array-cell-ref',
   BINARY = 'binary',
   COMPARE = 'compare',
+  CLOSURE = 'closure',
   EXPRESSION = 'expression',
-  FUNCTION = 'function',
+  FUNCTION_CALL = 'function-call',
   FUNCTION_DECLARATION = 'fun-dec',
   GET = 'get',
+  MEMBER_FIELD_REF = 'identifier-field-ref',
   LOGICAL = 'logical',
   OBJECT_REFERENCE = 'objectref',
   PARENTHESIS = 'parenthesis',
@@ -91,45 +75,92 @@ enum StackItemType {
   VALUE = 'value',
 }
 
-interface StackItem {
-  type: string;
+type StackItem =
+  | StackItemBase
+  | ArrayCellRefItem
+  | ArrayStackItem
+  | MemberFieldRefItem
+  | ClosureStackItem
+  | FunctionCallStackItem;
+
+interface StackItemBase {
+  type: StackItemType;
   callback?: ExpressionCallback;
   debug: string;
   obj?: any;
-  ctx?: any;
+  // ctx?: any;
 }
 
-interface Closure {
-  self: any;
-  parent?: Closure;
+interface ArrayStackItem extends StackItemBase {
+  type: StackItemType.ARRAY;
+  callback: ExpressionCallback;
+  items: ExpressionCallback[];
 }
 
-interface FunctionDescriptor {
-  callback: (context: FirebaseRulesContext, args: any[]) => any;
+interface ClosureStackItem extends StackItemBase {
+  type: StackItemType.CLOSURE;
+  callbacks: ExpressionCallback[];
+}
+
+interface FunctionCallStackItem extends StackItemBase {
+  type: StackItemType.FUNCTION_CALL;
+  argExpressions: ExpressionCallback[];
+  callback: ExpressionCallback;
+}
+
+interface MemberFieldRefItem extends StackItemBase {
+  type: StackItemType.MEMBER_FIELD_REF;
+  callback: ExpressionCallback;
+}
+
+interface ArrayCellRefItem extends StackItemBase {
+  type: StackItemType.ARRAY_CELL_REF;
+  callback: ExpressionCallback;
+}
+
+interface ExtendedFirebaseRulesContext extends FirebaseRulesContext {
+  exit: boolean;
+  hasAccess: {
+    create?: boolean;
+    read?: boolean;
+    write?: boolean;
+    update?: boolean;
+    list?: boolean;
+    delete?: boolean;
+  };
+  path: string;
+}
+
+export interface FirestoreRulesFunctionDescriptor {
+  callback: (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self?: any) => any;
   argNames: string[];
 }
 
-export const defaultFirebaseReulesContext: FirebaseRulesContext = {
+export const defaultFirebaseRulesContext: Partial<FirebaseRulesContext> = {
   auth: merge(defaultFirestoreRequest.auth, {}),
   resource: merge(defaultFirestoreResource, {}),
 };
 
+interface ClosureContext {
+  variables: { [fieldName: string]: any };
+  callbacks: ExpressionCallback[];
+}
 // tslint:disable-next-line: jsdoc-format
 /**
- * Create a default firebare rule context to be used when calling rules rights. 
- * 
+ * Create a default firebare rule context to be used when calling rules rights.
+ *
  * Function uses deep merge, so you can set needed values in sub objects like,
  *  ```typescript
- createFirebaseRulesContext({
-  auth: {
-    uid: '123'
-  }
-});
- ```
+ * createFirebaseRulesContext({
+ *   auth: {
+ *     uid: '123'
+ *   }
+ * });
+ * ```
  * This will override only the uid property and will leave other properties intact.
  *
  * @export
- * @param {Partial<FirebaseRulesContext>} [overrides] Values, to be overrided from default values. 
+ * @param {Partial<FirebaseRulesContext>} [overrides] Values, to be overrided from default values.
  * @param {boolean} authenticated When true, a default mock user info is given for context. Default value is `false`.
  * @returns {FirebaseRulesContext}
  */
@@ -138,7 +169,7 @@ export function createFirebaseRulesContext(
   authenticated: boolean = false
 ): FirebaseRulesContext {
   const context = merge(
-    defaultFirebaseReulesContext,
+    defaultFirebaseRulesContext,
     authenticated
       ? {}
       : {
@@ -151,8 +182,11 @@ export function createFirebaseRulesContext(
   return overrides ? merge(context, overrides) : context;
 }
 
-export default class RulesParserFacade {
-  private _parser: RulesParser;
+/**
+ * Firebase Rules Intepreter testing user rights based on rules script
+ */
+export default class FirebaseRulesIntepreterFacade {
+  private _parser: FirebaseRulesIntepreter;
 
   public get request(): MockFirestoreRequest {
     return this._parser.request;
@@ -179,10 +213,10 @@ export default class RulesParserFacade {
   }
 
   constructor() {
-    this._parser = new RulesParser();
+    this._parser = new FirebaseRulesIntepreter();
   }
 
-  public init = (rulesFile: string): RulesParserFacade => {
+  public init = (rulesFile: string): FirebaseRulesIntepreterFacade => {
     this._parser.init(rulesFile);
     return this;
   }
@@ -192,12 +226,12 @@ export default class RulesParserFacade {
    *
    * @memberof RulesParser
    */
-  public getRightsForPath = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
-    return this._parser.getRightsForPath(path, context);
+  public hasAccess = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
+    return this._parser.hasAccess(path, context);
   }
 }
 
-class RulesParser extends FirebaseRulesListener {
+class FirebaseRulesIntepreter extends FirebaseRulesListener {
   public get request(): MockFirestoreRequest {
     return this._request;
   }
@@ -221,24 +255,27 @@ class RulesParser extends FirebaseRulesListener {
   public get namespace() {
     return this._namespace;
   }
+
+  private _globalClosure: FirestoreRulesClosure;
+
   private _request: MockFirestoreRequest = defaultFirestoreRequest;
   private _resource: MockFirestoreResource = defaultFirestoreResource;
   private allowRules: AllowRule[] = [];
 
-  private stack: StackItem[] = [];
-  private closure: Closure = {
-    self: {},
-  };
+  private _stack: StackItem[] = [];
+  // private closure: FirestoreRulesClosureContext = new FirestoreRulesClosureContext();
 
   private pathElements: string[] = [];
   private _namespace: string;
   private _parser?: FirebaseRulesParser;
 
-  public init = (rulesFile: string): RulesParser => {
-    this.stack = [];
-    this.closure = {
-      self: {},
-    };
+  constructor() {
+    super();
+    this.initGlobalClosure();
+  }
+
+  public init = (rulesFile: string): FirebaseRulesIntepreter => {
+    this._stack = [];
 
     this._parser = parseFirebaseRulesFromString(rulesFile);
     this._parser.addErrorListener({
@@ -295,7 +332,7 @@ class RulesParser extends FirebaseRulesListener {
       },
     });
 
-    this.mapRulesForPaths(this._parser);
+    this.walkAST(this._parser);
     return this;
   }
 
@@ -308,97 +345,122 @@ class RulesParser extends FirebaseRulesListener {
    *
    * @memberof RulesParser
    */
-  public getRightsForPath = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
-    this.closure.self.request = this.request;
-    this.closure.self.resource = this.resource;
+  public hasAccess = (path: string, context: FirebaseRulesContext): FirebasePathAccessRights => {
+    const moduleClosure = this.newClosure();
 
-    for (const allowRule of this.allowRules) {
-      const match = allowRule.pattern.match(path);
-      if (match) {
-        const allowKeys = allowRule.allowKeys;
-        const rights: FirebasePathAccessRights = {};
+    const internalContext = {
+      ...context,
+      hasAccess: {},
+      exit: false,
+      path,
+    };
 
-        context.matchParams = match;
+    this._stack[0].callback!(internalContext, moduleClosure);
 
-        const hasAccess = allowRule.if ? allowRule.if(context) : true;
-        for (const key of allowKeys) {
-          rights[key] = hasAccess;
-        }
-        return rights;
-      }
-    }
-    return {};
+    return internalContext.hasAccess;
   }
 
-  public enterNamespace = (ctx: NamespaceContext) => {
-    this._namespace = ctx.getText();
+  public enterService = (ctx: ServiceContext) => {
+    const callbacks: ExpressionCallback[] = [];
+    this._namespace = ctx.getChild(1).getText();
+
+    this._stack.push({
+      type: StackItemType.CLOSURE,
+      debug: 'service',
+      obj: callbacks,
+      callback: (context, closure) => this.executeClosure(context, closure, callbacks),
+    });
   }
 
   public enterMatcher = (ctx: MatcherContext) => {
-    // matcher will only define the place in database tree where operatation are targeted
-
-    this.closure = {
-      self: {},
-      parent: this.closure,
-    };
-
     if (ctx.getChildCount() > 0) {
       const path = ctx.getChild(1);
+      const callbacks: ExpressionCallback[] = [];
+
       const pathElement = this.generatePath(path);
-      this.pathElements.push(pathElement);
+
+      this._stack.push({
+        type: StackItemType.CLOSURE,
+        debug: ctx.getText(),
+        obj: callbacks,
+        callback: (context: ExtendedFirebaseRulesContext, closure: FirestoreRulesClosure) => {
+          const newClosure = closure.open();
+          newClosure.path = pathElement;
+
+          const matchPattern = new MatchPattern(newClosure.getPath()); // TODO optimize
+
+          const variables = matchPattern.matchPrefix(context.path);
+          if (variables) {
+            newClosure.addValues(variables);
+            this.executeClosure(context, newClosure, callbacks);
+          }
+        },
+      });
     } else {
       throw new Error('Internal error: match -element without child elements.');
     }
   }
 
   public exitMatcher = (ctx: MatcherContext) => {
-    this.pathElements.pop();
-    if (this.closure.parent) {
-      this.closure = this.closure.parent;
-    } else {
-      throwError('Internal error, running out of closure scope', ctx);
-    }
+    // this.pathElements.pop();
+    // this.closure.close();
+    const closure = this._stack.pop();
+
+    const parentClosure = this.peek();
+    parentClosure.obj.push(closure!.callback);
   }
 
   public enterAllow = (ctx: AllowContext) => {
     const path = this.getCurrentPath();
     const pattern = new MatchPattern(path);
 
+    const allowKeys: AllowKey[] = [];
+
     const currentAllowRule = {
-      pattern,
-      allowKeys: [],
-      if: () => false,
+      pattern, // TODO remove
+      allowKeys,
+      if: (context: FirebaseRulesContext, closure: FirestoreRulesClosure) => false,
     };
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.ALLOW,
       obj: currentAllowRule,
       debug: ctx.getText(),
+      callback: (context, closure) => {
+        const hasAccess = currentAllowRule.if(context, closure);
+        for (const key of allowKeys) {
+          context.hasAccess[key] = context.hasAccess[key] || hasAccess;
+        }
+      },
     });
 
-    this.allowRules.push(currentAllowRule);
+    // this.allowRules.push(currentAllowRule);
   }
 
   public exitAllow = (ctx: AllowContext) => {
-    const item = this.stack.pop();
+    const item = this._stack.pop();
     if (!item) {
       throwError('Internal error', ctx);
       return;
     }
     if (item.type !== StackItemType.ALLOW) {
-      const allowItem = this.stack.pop();
+      const allowItem = this._stack.pop();
       if (!allowItem) {
         throwError('Internal error', ctx);
         return;
       }
       allowItem.obj.if = item.callback;
+
+      const closure = this.peek();
+      closure.obj.push(allowItem.callback);
     } else {
       // No expression is give, so allow will treated as true for all values
-      item.obj.if = () => true;
+      const closure = this.peek();
+      closure.obj.push(() => true);
     }
   }
 
   public enterAllowKey = (ctx: AllowKeyContext) => {
-    const item = this.stack[this.stack.length - 1];
+    const item = this.peek();
 
     const currentAllowRule = item.obj as AllowRule;
     if (!item.obj) {
@@ -425,50 +487,153 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitUnaryExpression = (ctx: UnaryExpressionContext) => {
-    const value = this.stack.pop();
+    const value = this._stack.pop();
     // toto undefined
     const operator = ctx.getChild(0).symbol.text;
 
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.UNARY,
       debug: ctx.getText(),
       callback: this.resolveUnaryOperation(operator, value!, ctx),
     });
   }
 
-  public enterFunctionCall = (ctx: FunctionCallContext) => {
-    const functionName = ctx.getChild(0).getText();
+  public enterArrayExpression = (ctx: ArrayExpressionContext) => {
+    const callback = (context: ExtendedFirebaseRulesContext, closure: FirestoreRulesClosure) => {
+      return arrayItem.items.map(expression => expression(context, closure));
+    };
+
+    const arrayItem: ArrayStackItem = {
+      type: StackItemType.ARRAY,
+      debug: ctx.getText(),
+      items: [],
+      callback,
+    };
+    this.push(arrayItem);
+  }
+
+  public exitArrayExpression = (ctx: ArrayExpressionContext) => {
+    const items: ExpressionCallback[] = [];
+    while (this.peek().type !== StackItemType.ARRAY) {
+      items.unshift(this.pop().callback!);
+    }
+    const item = this.peek() as ArrayStackItem;
+    item.items = items;
+  }
+
+  public exitMemberReferenceExpression = (ctx: MemberReferenceExpressionContext) => {
+    const expression = this._stack.pop();
+    const fieldName = ctx.getChild(2).getText();
+
+    const item: MemberFieldRefItem = {
+      type: StackItemType.MEMBER_FIELD_REF,
+      debug: ctx.getText(),
+      callback: (context, closure) => {
+        const value = expression!.callback!(context, closure);
+        return value[fieldName];
+      },
+    };
+    this.push(item);
+  }
+
+  public exitRangeExpression = (ctx: RangeExpressionContext) => {
+    const arrayExpression = this.pop();
+    const expression = this.pop();
+
+    const item: ArrayCellRefItem = {
+      type: StackItemType.ARRAY_CELL_REF,
+      debug: ctx.getText(),
+      callback: (context, closure) => {
+        const index = arrayExpression!.callback!(context, closure);
+        const value = expression!.callback!(context, closure);
+        return value[index];
+      },
+    };
+    this.push(item);
+  }
+
+  public enterMemberFunctionExpression = (ctx: MemberFunctionExpressionContext) => {
+    const functionName = ctx.getChild(2).getText();
 
     const argCallbacks: ExpressionCallback[] = [];
-    const fieldRefs: any[] = [];
-    const closure = this.closure;
+    // const closure = this.closure.current;
 
-    this.stack.push({
-      type: StackItemType.FUNCTION,
+    const itemContext = {
+      callbacks: argCallbacks,
+      expression: undefined,
+    };
+    this._stack.push({
+      type: StackItemType.FUNCTION_CALL,
       debug: ctx.getText(),
-      obj: {
-        callbacks: argCallbacks,
-        fieldRefs,
-      },
-      callback: context => {
-        const fun = this.peekClosureElement(closure, functionName, context) as FunctionDescriptor;
+      obj: itemContext,
+      callback: (context, closure) => {
+        const fun = closure.getValue(functionName) as FirestoreRulesFunctionDescriptor;
         if (!fun) {
           throwError(
             `Function with name ${functionName} was not found. Please, make sure that the function name is correctly spelled and it is available in this scope.`,
             ctx
           );
         }
-        const args: any[] = [];
+        const self = (itemContext.expression as any).callback(context, closure);
+
+        // const args: any[] = [];
         let index = 0;
+
+        const funClosure = closure.open();
+
         for (const callback of argCallbacks) {
-          const callbackResult = callback(context);
-          args.push(callbackResult);
-          this.closure.self[fun.argNames[index++]] = callbackResult;
+          const callbackResult = callback(context, funClosure);
+          // args.push(callbackResult);
+          funClosure.self[fun.argNames[index++]] = callbackResult;
         }
-        let value = fun.callback(context, args);
+        const value = fun.callback(context, funClosure, self);
+
+        funClosure.close();
+
+        return value;
+      },
+    });
+  }
+
+  public exitMemberFunctionExpression = (ctx: MemberFunctionExpressionContext) => {
+    const expression = this._stack.pop();
+    const item = this.peek();
+    item.obj.expression = expression;
+  }
+
+  public enterFunctionCall = (ctx: FunctionCallContext) => {
+    const functionName = ctx.getChild(0).getText();
+
+    const argExpressions: ExpressionCallback[] = [];
+    const fieldRefs: any[] = [];
+
+    const functionCallItem: FunctionCallStackItem = {
+      type: StackItemType.FUNCTION_CALL,
+      debug: ctx.getText(),
+      argExpressions,
+      callback: (context, closure) => {
+        const fun = closure.getValue(functionName) as FirestoreRulesFunctionDescriptor;
+        if (!fun) {
+          throwError(
+            `Function with name ${functionName} was not found. Please, make sure that the function name is correctly spelled and it is available in this scope.`,
+            ctx
+          );
+        }
+        let index = 0;
+
+        const funClosure = closure.open();
+
+        for (const callback of argExpressions) {
+          const callbackResult = callback(context, closure);
+          funClosure.self[fun.argNames[index++]] = callbackResult;
+        }
+
+        let value = fun.callback(context, funClosure);
+
+        funClosure.close();
 
         if (fieldRefs.length > 0) {
-          value = this.getFieldValueFromObject(context, value, fieldRefs, 0);
+          value = this.getFieldValueFromObject(context, value, fieldRefs, 0, closure);
           if (value) {
             return value;
           }
@@ -477,12 +642,25 @@ class RulesParser extends FirebaseRulesListener {
 
         return value;
       },
-    });
+    };
+
+    this.push(functionCallItem);
   }
 
   public exitArg = (ctx: ArgContext) => {
-    const expression = this.stack.pop();
-    const item = this.stackPeek();
+    const expression = this.pop();
+    const item = this.peek() as FunctionCallStackItem;
+    if (item.type !== StackItemType.FUNCTION_CALL) {
+      throw new Error('Expecting a function call but found ' + expression.type);
+    }
+
+    const argCallbacks = item.argExpressions;
+    argCallbacks.push(expression.callback!);
+  }
+
+  public exitMemberArg = (ctx: ArgContext) => {
+    const expression = this._stack.pop();
+    const item = this.peek(1);
 
     const argCallbacks = item.obj.callbacks as ExpressionCallback[];
     if (!item.obj) {
@@ -493,7 +671,7 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public enterFunctionDeclaration = (ctx: FunctionDeclarationContext) => {
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.FUNCTION_DECLARATION,
       callback: () => true,
       obj: [],
@@ -502,34 +680,40 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitArgDeclaration = (ctx: ArgDeclarationContext) => {
-    const item = this.stackPeek();
+    const item = this.peek();
     item.obj.push(ctx.getText());
   }
 
   public exitFunctionDeclaration = (ctx: FunctionDeclarationContext) => {
-    const item = this.stack.pop();
-    const funDec = this.stack.pop();
+    const funcBody = this._stack.pop();
+    const funDec = this._stack.pop();
+    const parentClosure = this.peek();
 
     const argNames = funDec!.obj;
 
-    if (!item) {
+    if (!funcBody) {
       throwError(`Function not found from stack`, ctx);
       return;
     }
     const functionName = ctx.getChild(1).symbol.text;
 
-    if (this.closure.self[functionName]) {
-      throwError(`Function with name ${functionName} already exists`, ctx);
-      return;
-    }
+    // TODO check from closure item
+    // if (this.closure.current.self[functionName]) {
+    //   throwError(`Function with name ${functionName} already exists`, ctx);
+    //   return;
+    // }
 
-    const funDesc: FunctionDescriptor = {
-      callback: (context: any, args: any[]) => {
-        return item.callback!(context);
-      },
-      argNames,
-    };
-    this.closure.self[functionName] = funDesc;
+    parentClosure.obj.push((context: ExtendedFirebaseRulesContext, closure: FirestoreRulesClosure) => {
+      const desc: FirestoreRulesFunctionDescriptor = {
+        callback: funcBody.callback!,
+        argNames,
+      };
+      closure.addValues({
+        [functionName]: desc,
+      });
+
+      return funcBody.callback!(context, closure);
+    });
   }
 
   public exitNumberExpression = (ctx: NumberExpressionContext) => {
@@ -539,7 +723,7 @@ class RulesParser extends FirebaseRulesListener {
   public exitStringExpression = (ctx: StringExpressionContext) => {
     let value = ctx.getText();
     value = value.substr(1, value.length - 2);
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.VALUE,
       debug: ctx.getText(),
       callback: () => value,
@@ -547,7 +731,7 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitBooleanExpression = (ctx: BooleanExpressionContext) => {
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.VALUE,
       callback: () => JSON.parse(ctx.getText()),
       debug: ctx.getText(),
@@ -555,7 +739,7 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitNullExpression = (ctx: NullExpressionContext) => {
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.VALUE,
       callback: () => null,
       debug: ctx.getText(),
@@ -567,19 +751,34 @@ class RulesParser extends FirebaseRulesListener {
 
     const fieldRefs = [identifier];
 
-    this.stack.push({
+    // const closure = this.closure.current;
+
+    this._stack.push({
       type: StackItemType.OBJECT_REFERENCE,
       obj: fieldRefs,
       debug: ctx.getText(),
-      callback: context => {
-        const objectIdentifier = this.refValue(context, fieldRefs[0]);
-        let obj = this.peekClosureElement(this.closure, objectIdentifier, context);
+      callback: (context, closure) => {
+        const objectIdentifier = this.refValue(context, fieldRefs[0], closure);
+        let obj = closure.getValue(objectIdentifier);
 
-        obj = this.getFieldValueFromObject(context, obj, fieldRefs, 1);
+        obj = this.getFieldValueFromObject(context, obj, fieldRefs, 1, closure);
         if (obj || obj === '') {
           return obj;
         }
         throwError(`Null value error, field ${ctx.getText()} do not exists`, ctx);
+      },
+    });
+  }
+
+  public exitObjectReferenceExpression = (ctx: ObjectReferenceContext) => {
+    const fieldName = ctx.getText();
+
+    this._stack.push({
+      type: StackItemType.OBJECT_REFERENCE,
+      debug: ctx.getText(),
+      callback: (context, closure) => {
+        const objectIdentifier = this.refValue(context, fieldName, closure);
+        return closure.getValue(objectIdentifier);
       },
     });
   }
@@ -590,14 +789,16 @@ class RulesParser extends FirebaseRulesListener {
     const argCallbacks: ExpressionCallback[] = [];
     const fieldRefs: any[] = [];
 
-    this.stack.push({
-      type: StackItemType.FUNCTION,
+    // const closure = this.closure.current;
+
+    this._stack.push({
+      type: StackItemType.FUNCTION_CALL,
       debug: ctx.getText(),
       obj: {
         callbacks: argCallbacks,
         fieldRefs,
       },
-      callback: context => {
+      callback: (context, closure) => {
         let fun;
         switch (functionName) {
           case 'get':
@@ -630,13 +831,13 @@ class RulesParser extends FirebaseRulesListener {
 
         let path: string = '';
         for (const callback of argCallbacks) {
-          const callbackResult = typeof callback === 'string' ? callback : callback(context);
+          const callbackResult = typeof callback === 'string' ? callback : callback(context, closure);
           path += '/' + callbackResult;
         }
         let value = fun(path);
 
         if (fieldRefs.length > 0) {
-          value = this.getFieldValueFromObject(context, value, fieldRefs, 0);
+          value = this.getFieldValueFromObject(context, value, fieldRefs, 0, closure);
           if (value) {
             return value;
           }
@@ -648,19 +849,19 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitGetPathExpressionVariable = (ctx: GetPathExpressionVariableContext) => {
-    const expression = this.stack.pop();
-    const item = this.stackPeek();
+    const expression = this._stack.pop();
+    const item = this.peek();
 
-    const argCallbacks = item.obj.callbacks;
     if (!item.obj) {
       throwError('Allow key defined while no allow operation is active.', ctx);
       return;
     }
+    const argCallbacks = item.obj.callbacks;
     argCallbacks.push(expression!.callback!);
   }
 
   public exitGetPathVariable = (ctx: GetPathVariableContext) => {
-    const item = this.stackPeek();
+    const item = this.peek();
     const value = ctx.getText();
     const argCallbacks = item.obj.callbacks;
     if (!item.obj) {
@@ -671,48 +872,87 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   public exitFieldReferenceWithIdentifier = (ctx: FieldReferenceWithIdentifierContext) => {
-    const item = this.stackPeek();
     const fieldName = ctx.getChild(1).getText();
-    switch (item.type) {
-      case StackItemType.OBJECT_REFERENCE:
-        item.obj.push(fieldName);
-        break;
-      case StackItemType.FUNCTION:
-        item.obj.fieldRefs.push(fieldName);
-        break;
-      default:
-        throwError(`Unidentified case for field reference ${item.type}`, ctx);
-    }
+    const expressionItem = this.pop();
+
+    const fieldRefItem: MemberFieldRefItem = {
+      type: StackItemType.MEMBER_FIELD_REF,
+      debug: ctx.getText(),
+      callback: (context, closure) => {
+        const value = expressionItem!.callback!(context, closure);
+        if (typeof value !== 'object') {
+          throwError(`Unidentfied type ${typeof value} for field ref.`, ctx);
+          return;
+        }
+        return value[fieldName];
+      },
+    };
+
+    this.push(fieldRefItem);
+
+    // switch (item.type) {
+    //   case StackItemType.OBJECT_REFERENCE:
+    //     item.obj.push(fieldName);
+    //     break;
+    //   case StackItemType.FUNCTION_CALL:
+    //     item.item.obj.fieldRefs.push(fieldName);
+    //     break;
+    //   default:
+    //     throwError(`Unidentified case for field reference ${item.type}`, ctx);
+    // }
   }
 
   public exitFieldReferenceWithMemberRef = (ctx: FieldReferenceWithMemberRefContext) => {
-    const expression = this.stack.pop();
+    const expression = this._stack.pop();
     if (!expression) {
       throwError('Internal error, no expression found in memberRef', ctx);
       return;
     }
-    const item = this.stackPeek();
+    const item = this.peek();
     item.obj.push(expression.callback);
   }
 
-  private refValue = (context: FirebaseRulesContext, value: string | ExpressionCallback) => {
+  private executeClosure = (
+    context: ExtendedFirebaseRulesContext,
+    closure: FirestoreRulesClosure,
+    callbacks: ExpressionCallback[]
+  ) => {
+    if (context.exit) {
+      return;
+    }
+    const subClosure = closure.open();
+
+    for (const callback of callbacks) {
+      callback(context, subClosure);
+      if (context.exit) {
+        return;
+      }
+    }
+  }
+
+  private refValue = (
+    context: ExtendedFirebaseRulesContext,
+    value: string | ExpressionCallback,
+    closure: FirestoreRulesClosure
+  ) => {
     if (typeof value === 'string') {
       return value;
     }
-    return value(context);
+    return value(context, closure);
   }
 
   private getFieldValueFromObject = (
-    context: FirebaseRulesContext,
+    context: ExtendedFirebaseRulesContext,
     obj: any,
     fieldRefs: Array<string | ExpressionCallback>,
-    startIndex: number
+    startIndex: number,
+    closure: FirestoreRulesClosure
   ) => {
     for (let i = startIndex; i < fieldRefs.length; i++) {
       if (!obj) {
         break;
       }
-      const value = this.refValue(context, fieldRefs[i]);
+      const value = this.refValue(context, fieldRefs[i], closure);
       obj = obj[value];
     }
     return obj;
@@ -746,8 +986,8 @@ class RulesParser extends FirebaseRulesListener {
       throwError(`Internal error`, ctx);
     }
 
-    return context => {
-      const value = expression.callback!(context);
+    return (context, closure) => {
+      const value = expression.callback!(context, closure);
 
       switch (operation) {
         case '!':
@@ -771,9 +1011,9 @@ class RulesParser extends FirebaseRulesListener {
       throwError(`Internal error`, ctx);
     }
 
-    return context => {
-      const leftValue = left.callback!(context);
-      const rightValue = right.callback!(context);
+    return (context, closure) => {
+      const leftValue = left.callback!(context, closure);
+      const rightValue = right.callback!(context, closure);
 
       switch (operator) {
         case '<':
@@ -781,6 +1021,23 @@ class RulesParser extends FirebaseRulesListener {
         case '<=':
           return leftValue <= rightValue;
         case '==':
+          if (Array.isArray(leftValue)) {
+            if (Array.isArray(rightValue)) {
+              if (leftValue.length !== rightValue.length) {
+                return false;
+              }
+              for (let i = 0; i < leftValue.length; i++) {
+                if (leftValue[i] !== rightValue[i]) {
+                  return false;
+                }
+              }
+              return true;
+            }
+            return false;
+          }
+          if (Array.isArray(rightValue)) {
+            return false;
+          }
           return leftValue === rightValue;
         case '!=':
           return leftValue !== rightValue;
@@ -823,32 +1080,51 @@ class RulesParser extends FirebaseRulesListener {
    * @private
    * @memberof RulesParser
    */
-  private mapRulesForPaths = (parser: FirebaseRulesParser) => {
+  private walkAST = (parser: FirebaseRulesParser) => {
     const service = parser.service();
 
     ParseTreeWalker.DEFAULT.walk(this, service);
   }
 
-  private stackPeek() {
-    return this.stack[this.stack.length - 1];
+  private initGlobalClosure = () => {
+    this._globalClosure = new FirestoreRulesClosure();
+    registerSystemFunctions(this._globalClosure);
   }
 
-  private peekClosureElement(closure: Closure, fieldName: string, context: FirebaseRulesContext) {
-    let c: Closure | undefined = closure;
-    do {
-      const obj = c.self[fieldName];
-      if (obj) {
-        return obj;
-      }
-      c = c.parent;
-    } while (c);
-    // return a value for match params if found
-    return context.matchParams ? context.matchParams[fieldName] : undefined;
+  private push(item: StackItem) {
+    this._stack.push(item);
+  }
+
+  private pop() {
+    const item = this._stack.pop() as StackItem;
+    return this.stackItemWithType(item);
+  }
+
+  private stackItemWithType(item: StackItem) {
+    switch (item.type) {
+      case StackItemType.FUNCTION_CALL:
+        return item as FunctionCallStackItem;
+      case StackItemType.CLOSURE:
+        return item as ClosureStackItem;
+      default:
+        return item;
+    }
+  }
+
+  private newClosure() {
+    const closure = new FirestoreRulesClosure(this._globalClosure);
+    closure.self.request = this.request;
+    closure.self.resource = this.resource;
+    return closure;
+  }
+
+  private peek(distance: number = 0) {
+    return this.stackItemWithType(this._stack[this._stack.length - 1 - distance]);
   }
 
   private handleValueExpression(ctx: NumberExpressionContext | StringExpressionContext) {
     const value = JSON.parse(ctx.getText());
-    this.stack.push({
+    this._stack.push({
       type: StackItemType.VALUE,
       debug: ctx.getText(),
       callback: () => value,
@@ -856,16 +1132,17 @@ class RulesParser extends FirebaseRulesListener {
   }
 
   private handleBinaryOperation(type: StackItemType, ctx: ParserRuleContext) {
-    const right = this.stack.pop();
-    const left = this.stack.pop();
+    const right = this._stack.pop();
+    const left = this._stack.pop();
     const operator = ctx.getChild(1).getText();
-    this.stack.push({
+    this._stack.push({
       type,
       debug: operator,
       callback: this.resolveBinaryOperation(left!, operator, right!, ctx),
     });
   }
 }
+
 function throwError(message: string, ctx: ParserRuleContext): never {
   throw new Error(
     `${message} at line ${ctx.start.line} column ${ctx.start.start}. ${ctx.getSourceInterval().toString()}`

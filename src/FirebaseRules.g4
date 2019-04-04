@@ -1,11 +1,12 @@
 grammar FirebaseRules;
 /* This will be the entry point of our parser.*/
-service: Service namespace namespaceBlock;
+service: Service namespaceIdentifier namespaceBlock;
 
+namespaceIdentifier: id (Dot id)*;
 /**
  * Namespace definition shown after service
  */
-namespace: objectReference;
+// namespace: NamespaceIdentifier;
 
 /**
  * Namespace block can only contain matchers, functions and comments
@@ -36,6 +37,10 @@ arg: expression;
 
 arguments: arg? (',' arg)*;
 
+memberArg: expression;
+
+memberArguments: memberArg? (',' memberArg)*;
+
 argDeclaration: Identifier;
 
 argDeclarations: argDeclaration? (',' argDeclaration)*;
@@ -45,8 +50,10 @@ functionDeclaration:
 		CurlyClose;
 
 fieldReference:
-	(Dot id)											# fieldReferenceWithIdentifier
-	| (SquareBracketOpen expression SquareBracketClose)	# fieldReferenceWithMemberRef;
+	Dot id												# fieldReferenceWithIdentifier
+	| SquareBracketOpen expression SquareBracketClose	# fieldReferenceWithMemberRef;
+
+// memberFunction: Dot id BracketOpen arguments BracketClose;
 
 /*
  * Id is a set of all possible id's with reserved words. This should be used only with object
@@ -71,6 +78,8 @@ id:
 	| Null
 	| Service;
 
+// stringRange: SquareBracketOpen expression (Colon expression)? SquareBracketClose;
+
 /**
  * Any supported expression
  */
@@ -93,17 +102,22 @@ expression:
 		| Slash
 		| ArithmeticExp
 		| ArithmeticModus
-	) expression								# arithmeticExpression
-	| (LogicalNot | ArithmeticSub) expression	# unaryExpression
-	| String									# stringExpression
-	| Number									# numberExpression
-	| (True | False)							# booleanExpression
-	| objectReference							# objectReferenceExpression
-	| ruleFunctionCall							# getExpression
-	| functionCall								# functionExpression
-	| BracketOpen expression BracketClose		# parenthesisExpression;
+	) expression																		# arithmeticExpression
+	| expression Dot id																	# memberReferenceExpression
+	| expression Dot id BracketOpen memberArguments BracketClose						# memberFunctionExpression
+	| expression SquareBracketOpen expression (Colon expression)? SquareBracketClose	#
+		rangeExpression
+	| SquareBracketOpen expression? (Comma expression)* SquareBracketClose	# arrayExpression
+	| (LogicalNot | ArithmeticSub) expression								# unaryExpression
+	| String																# stringExpression
+	| Number																# numberExpression
+	| (True | False)														# booleanExpression
+	| Identifier															# objectReferenceExpression
+	| ruleFunctionCall														# getExpression
+	| functionCall															# functionExpression
+	| BracketOpen expression BracketClose									# parenthesisExpression;
 
-objectReference: Identifier (fieldReference)*;
+objectReference: Identifier; // (fieldReference)*;
 
 getPathExpressionVariable:
 	PathVariableBracket expression BracketClose;
@@ -111,14 +125,11 @@ getPathExpressionVariable:
 getPath: (Slash (getPathVariable | getPathExpressionVariable))+;
 /* Firestore rules own function call that have special input args */
 ruleFunctionCall:
-	(Get | Exists) BracketOpen getPath BracketClose (
-		fieldReference
-	)*;
+	(Get | Exists) BracketOpen getPath BracketClose;
+// ( fieldReference )*;
 
-functionCall:
-	Identifier BracketOpen arguments BracketClose (
-		fieldReference
-	)*;
+functionCall: Identifier BracketOpen arguments BracketClose;
+// ( fieldReference )*;
 
 matchPath: (Slash (Identifier | pathVariable))+;
 

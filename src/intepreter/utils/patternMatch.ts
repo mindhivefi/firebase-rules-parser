@@ -58,6 +58,44 @@ export class MatchPattern {
     return params;
   }
 
+  /**
+   * Match path and pattern to match from the start with the pattern
+   *
+   * @param {string} path Path to be matched
+   * @returns {(false | MatchParams)} If no match is found, `false` will be returned. If match is found, a MatchParams object will be returned with pattern param values contained.
+   * @memberof MatchPattern
+   */
+  public matchPrefix = (path: string): false | MatchParams => {
+    const elements = path
+      .trim()
+      .substr(1)
+      .split('/');
+    const params: MatchParams = {};
+    if (elements.length === 0) {
+      return false;
+    }
+    let index = 0;
+    for (const field of this._fields) {
+      if (elements.length <= index) {
+        return false;
+      }
+      const element = elements[index++];
+      if (typeof field === 'string') {
+        if (element !== field) {
+          return false;
+        }
+      } else {
+        if (field.wildcard) {
+          // any sub path will match with wildcard
+          params[field.name] = this.resolvePathFromIndex(elements, element, index);
+          return params;
+        }
+        params[field.name] = element;
+      }
+    }
+    return params;
+  }
+
   private resolvePathFromIndex = (elements: string[], element: string, index: number): string => {
     let result = element;
 

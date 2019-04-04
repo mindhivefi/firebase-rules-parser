@@ -1,3 +1,5 @@
+import * as merge from 'deepmerge';
+
 export interface MockFirestoreResource {
   __name__: string;
 
@@ -17,8 +19,5 @@ export const defaultFirestoreResource: MockFirestoreResource = {
 };
 
 export function mockFirestoreResource(values: Partial<MockFirestoreResource>): MockFirestoreResource {
-  return {
-    ...defaultFirestoreResource,
-    ...values,
-  };
+  return merge(defaultFirestoreResource, values);
 }
