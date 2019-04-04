@@ -20,12 +20,12 @@ FirebaseRulesListener.prototype.exitService = function(ctx) {
 };
 
 
-// Enter a parse tree produced by FirebaseRulesParser#namespace.
-FirebaseRulesListener.prototype.enterNamespace = function(ctx) {
+// Enter a parse tree produced by FirebaseRulesParser#namespaceIdentifier.
+FirebaseRulesListener.prototype.enterNamespaceIdentifier = function(ctx) {
 };
 
-// Exit a parse tree produced by FirebaseRulesParser#namespace.
-FirebaseRulesListener.prototype.exitNamespace = function(ctx) {
+// Exit a parse tree produced by FirebaseRulesParser#namespaceIdentifier.
+FirebaseRulesListener.prototype.exitNamespaceIdentifier = function(ctx) {
 };
 
 
@@ -119,6 +119,24 @@ FirebaseRulesListener.prototype.exitArguments = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#memberArg.
+FirebaseRulesListener.prototype.enterMemberArg = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#memberArg.
+FirebaseRulesListener.prototype.exitMemberArg = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#memberArguments.
+FirebaseRulesListener.prototype.enterMemberArguments = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#memberArguments.
+FirebaseRulesListener.prototype.exitMemberArguments = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#argDeclaration.
 FirebaseRulesListener.prototype.enterArgDeclaration = function(ctx) {
 };
@@ -173,6 +191,15 @@ FirebaseRulesListener.prototype.exitId = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#arrayExpression.
+FirebaseRulesListener.prototype.enterArrayExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#arrayExpression.
+FirebaseRulesListener.prototype.exitArrayExpression = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#numberExpression.
 FirebaseRulesListener.prototype.enterNumberExpression = function(ctx) {
 };
@@ -206,6 +233,15 @@ FirebaseRulesListener.prototype.enterArithmeticExpression = function(ctx) {
 
 // Exit a parse tree produced by FirebaseRulesParser#arithmeticExpression.
 FirebaseRulesListener.prototype.exitArithmeticExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#memberReferenceExpression.
+FirebaseRulesListener.prototype.enterMemberReferenceExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#memberReferenceExpression.
+FirebaseRulesListener.prototype.exitMemberReferenceExpression = function(ctx) {
 };
 
 
@@ -281,12 +317,30 @@ FirebaseRulesListener.prototype.exitNullExpression = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#rangeExpression.
+FirebaseRulesListener.prototype.enterRangeExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#rangeExpression.
+FirebaseRulesListener.prototype.exitRangeExpression = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#unaryExpression.
 FirebaseRulesListener.prototype.enterUnaryExpression = function(ctx) {
 };
 
 // Exit a parse tree produced by FirebaseRulesParser#unaryExpression.
 FirebaseRulesListener.prototype.exitUnaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by FirebaseRulesParser#memberFunctionExpression.
+FirebaseRulesListener.prototype.enterMemberFunctionExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#memberFunctionExpression.
+FirebaseRulesListener.prototype.exitMemberFunctionExpression = function(ctx) {
 };
 
 

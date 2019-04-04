@@ -1,5 +1,6 @@
 import { defaultFirestoreResource, MockFirestoreResource } from './MockFirestoreResource';
 
+import * as merge from 'deepmerge';
 export interface MockFirestoreRequest {
   auth: {
     uid: string;
@@ -62,8 +63,5 @@ export const defaultFirestoreRequest: MockFirestoreRequest = {
 };
 
 export function createMockRequest(values: Partial<MockFirestoreRequest>): MockFirestoreRequest {
-  return {
-    ...defaultFirestoreRequest,
-    ...values,
-  };
+  return merge(defaultFirestoreRequest, values);
 }

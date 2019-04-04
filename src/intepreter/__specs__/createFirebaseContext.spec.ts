@@ -1,12 +1,12 @@
-import { createFirebaseRulesContext, defaultFirebaseReulesContext } from '..';
+import { createFirebaseRulesContext, defaultFirebaseRulesContext } from '..';
 
 describe('create FirebaseRulesContext', () => {
   it('will return the default context, if no overrides are give', () => {
-    expect(createFirebaseRulesContext({}, true)).toEqual(defaultFirebaseReulesContext);
+    expect(createFirebaseRulesContext({}, true)).toEqual(defaultFirebaseRulesContext);
   });
 
   it('will override only values set by override and leave other default values intact.', () => {
-    const email = defaultFirebaseReulesContext.auth.email;
+    const email = defaultFirebaseRulesContext.auth.email;
 
     const context = createFirebaseRulesContext(
       {

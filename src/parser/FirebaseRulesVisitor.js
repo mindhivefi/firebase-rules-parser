@@ -18,8 +18,8 @@ FirebaseRulesVisitor.prototype.visitService = function(ctx) {
 };
 
 
-// Visit a parse tree produced by FirebaseRulesParser#namespace.
-FirebaseRulesVisitor.prototype.visitNamespace = function(ctx) {
+// Visit a parse tree produced by FirebaseRulesParser#namespaceIdentifier.
+FirebaseRulesVisitor.prototype.visitNamespaceIdentifier = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -84,6 +84,18 @@ FirebaseRulesVisitor.prototype.visitArguments = function(ctx) {
 };
 
 
+// Visit a parse tree produced by FirebaseRulesParser#memberArg.
+FirebaseRulesVisitor.prototype.visitMemberArg = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#memberArguments.
+FirebaseRulesVisitor.prototype.visitMemberArguments = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by FirebaseRulesParser#argDeclaration.
 FirebaseRulesVisitor.prototype.visitArgDeclaration = function(ctx) {
   return this.visitChildren(ctx);
@@ -120,6 +132,12 @@ FirebaseRulesVisitor.prototype.visitId = function(ctx) {
 };
 
 
+// Visit a parse tree produced by FirebaseRulesParser#arrayExpression.
+FirebaseRulesVisitor.prototype.visitArrayExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by FirebaseRulesParser#numberExpression.
 FirebaseRulesVisitor.prototype.visitNumberExpression = function(ctx) {
   return this.visitChildren(ctx);
@@ -140,6 +158,12 @@ FirebaseRulesVisitor.prototype.visitParenthesisExpression = function(ctx) {
 
 // Visit a parse tree produced by FirebaseRulesParser#arithmeticExpression.
 FirebaseRulesVisitor.prototype.visitArithmeticExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#memberReferenceExpression.
+FirebaseRulesVisitor.prototype.visitMemberReferenceExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -192,8 +216,20 @@ FirebaseRulesVisitor.prototype.visitNullExpression = function(ctx) {
 };
 
 
+// Visit a parse tree produced by FirebaseRulesParser#rangeExpression.
+FirebaseRulesVisitor.prototype.visitRangeExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by FirebaseRulesParser#unaryExpression.
 FirebaseRulesVisitor.prototype.visitUnaryExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by FirebaseRulesParser#memberFunctionExpression.
+FirebaseRulesVisitor.prototype.visitMemberFunctionExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 

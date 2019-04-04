@@ -9,6 +9,7 @@
     "clean": "rimraf -f -r -d lib",
     "prebuild": "yarn clean",
     "build": "./node_modules/.bin/tsc",
+    "postbuild": "yarn copy-parser-files",
     "test": "jest",
     "test:watch": "jest --verbose --watch",
     "lint": "tslint --fix ./src/**/*.ts*",
@@ -16,6 +17,7 @@
     "predeploy": "yarn build",
     "deploy": "npm deploy",
     "commit": "npx git-cz",
+    "copy-parser-files": "cpx ./src/parser/**/*.* ./lib/parser/",
     "check-package": "tar tvf $(npm pack)",
     "generate": "antlr4-tool -o ./src/parser ./src/FirebaseRules.g4 && yarn lint && yarn build"
   },
@@ -66,10 +68,11 @@
     "@types/antlr4": "4.7.0",
     "@types/deepmerge": "2.2.0",
     "@types/jest": "24.0.11",
+    "antlr4": "4.7.2",
     "antlr4-tool": "1.0.26",
-    "antlr4ts-cli": "0.5.0-alpha.3",
     "commitizen": "3.0.7",
     "condition-circle": "2.0.2",
+    "cpx": "1.5.0",
     "husky": "1.3.1",
     "jest": "24.5.0",
     "rimraf": "2.6.3",
@@ -96,7 +99,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "antlr4": "4.7.2",
     "deepmerge": "3.2.0"
   }
 }
