@@ -21,7 +21,7 @@ export class FirestoreRulesClosure {
     let closure: FirestoreRulesClosure | undefined = this;
     do {
       const obj = closure.self[fieldName];
-      if (obj) {
+      if (obj !== undefined) {
         return obj;
       }
       closure = closure.parent;

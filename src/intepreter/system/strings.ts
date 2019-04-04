@@ -28,7 +28,7 @@ const size = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, sel
  */
 const string = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self?: any): any => {
   const stringWannabe = closure.getValue('value');
-  if (!stringWannabe) {
+  if (stringWannabe === undefined) {
     throw new Error(`string() -method did not have an argument.`);
   }
   if (stringWannabe === null) {
@@ -46,7 +46,7 @@ const string = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, s
 };
 
 /**
- * Returns a version of the string with leading and trailing spaces removed.
+ * Splits a string according to a regular expression.
  */
 const split = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self: any): any => {
   if (typeof self !== 'string') {
@@ -57,12 +57,11 @@ const split = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, se
   if (!re) {
     throw new Error(`split() -method did not have an argument.`);
   }
-
   return self.split(re);
 };
 
 /**
- * Returns a version of the string with leading and trailing spaces removed.
+ * Performs a regular expression match on the whole string.
  */
 const matches = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self: any): any => {
   if (typeof self !== 'string') {
@@ -73,7 +72,7 @@ const matches = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, 
     throw new Error(`matches() -method did not have an argument.`);
   }
 
-  return self.match(re); // TODO user actual Google RE2 syntax
+  return self.match(re) !== null; // TODO user actual Google RE2 syntax
 };
 
 /**

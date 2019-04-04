@@ -481,21 +481,21 @@ describe('Firebase Rules', () => {
       });
     });
 
-    // it('will match regex pattern of input string', () => {
-    //   const ruleFile = `service cloud.firestore {
-    //     match /databases/{database}/documents {
-    //       match /organizations/{doc} {
-    //         allow read: if 'This is very cool thingie'.matches('.*cool.*') == true;
-    //       }
-    //     }
-    //   }`;
-    //   const path = '/databases/DEFAULT/documents/organizations/mindhive';
-    //   const context = createFirebaseRulesContext();
-    //   const rules = new RulesParser().init(ruleFile);
+    it('will match regex pattern of input string', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if 'This is very cool thingie'.matches('.*cool.*') == true;
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+      const context = createFirebaseRulesContext();
+      const rules = new RulesParser().init(ruleFile);
 
-    //   expect(rules.hasAccess(path, context)).toEqual({
-    //     read: true,
-    //   });
-    // });
+      expect(rules.hasAccess(path, context)).toEqual({
+        read: true,
+      });
+    });
   });
 });
