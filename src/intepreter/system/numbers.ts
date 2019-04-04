@@ -4,7 +4,7 @@ import { FirestoreRulesFunctionDescriptor } from '..';
 import { FirestoreRulesClosure } from '../FirestoreRuleClosure';
 
 /**
- * Returns a lowercase version of the input string.
+ * Convert string and float values into integer.
  */
 const int = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self: any): any => {
   const intWannabe = closure.getValue('value');
@@ -27,7 +27,7 @@ const int = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self
 };
 
 /**
- * Boolean, integer, float, and null values can be converted into strings using the string() function:
+ * Conver string and int values into float.
  */
 const float = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self?: any): any => {
   const floatWannabe = closure.getValue('value');
@@ -50,7 +50,7 @@ const float = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, se
 };
 
 /**
- * Convert a string to boolean.
+ * Conver string values to boolean
  */
 const bool = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self?: any): any => {
   const booleanWannabe = closure.getValue('value');
@@ -67,7 +67,7 @@ export default function registerNumberFunctions(closure: FirestoreRulesClosure) 
   const numberFunctions: { [name: string]: FirestoreRulesFunctionDescriptor } = {
     int: {
       callback: int,
-      argNames: [],
+      argNames: ['value'],
     },
     float: {
       callback: float,
@@ -75,7 +75,7 @@ export default function registerNumberFunctions(closure: FirestoreRulesClosure) 
     },
     bool: {
       callback: bool,
-      argNames: [],
+      argNames: ['value'],
     },
   };
 

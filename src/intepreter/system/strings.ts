@@ -17,10 +17,14 @@ const lower = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, se
  * Returns the number of characters in the string.
  */
 const size = (context: FirebaseRulesContext, closure: FirestoreRulesClosure, self: any): any => {
-  if (typeof self !== 'string') {
-    throw new Error(`Can not call length() -method on non string object: ${self}`);
+  const type = typeof self;
+  if (Array.isArray(self) || type === 'string') {
+    return self.length;
   }
-  return self.length;
+  if (type === 'object') {
+    return Object.keys(self).length;
+  }
+  throw new Error(`Can not call length() -method on non string object: ${self}`);
 };
 
 /**
