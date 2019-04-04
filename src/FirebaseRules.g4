@@ -103,6 +103,7 @@ expression:
 		| ArithmeticExp
 		| ArithmeticModus
 	) expression																		# arithmeticExpression
+	| expression InOperator expression													# inExpression
 	| expression Dot id																	# memberReferenceExpression
 	| expression Dot id BracketOpen memberArguments BracketClose						# memberFunctionExpression
 	| expression SquareBracketOpen expression (Colon expression)? SquareBracketClose	#
@@ -171,6 +172,8 @@ ArithmeticSub: '-';
 ArithmeticMul: '*';
 ArithmeticExp: '^';
 ArithmeticModus: '%';
+
+InOperator: 'in';
 
 /* Reserved words */
 

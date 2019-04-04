@@ -2,12 +2,10 @@
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 var FirebaseRulesListener = require('./FirebaseRulesListener').FirebaseRulesListener;
-var FirebaseRulesVisitor = require('./FirebaseRulesVisitor').FirebaseRulesVisitor;
-
 var grammarFileName = "FirebaseRules.g4";
 
 var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
-    "\u00036\u0117\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
+    "\u00037\u011a\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
     "\u0004\u0004\u0005\t\u0005\u0004\u0006\t\u0006\u0004\u0007\t\u0007\u0004",
     "\b\t\b\u0004\t\t\t\u0004\n\t\n\u0004\u000b\t\u000b\u0004\f\t\f\u0004",
     "\r\t\r\u0004\u000e\t\u000e\u0004\u000f\t\u000f\u0004\u0010\t\u0010\u0004",
@@ -43,150 +41,152 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003",
     "\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003",
     "\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0003",
-    "\u0015\u0005\u0015\u00ec\n\u0015\u0003\u0015\u0003\u0015\u0007\u0015",
-    "\u00f0\n\u0015\f\u0015\u000e\u0015\u00f3\u000b\u0015\u0003\u0016\u0003",
-    "\u0016\u0003\u0017\u0003\u0017\u0003\u0017\u0003\u0017\u0003\u0018\u0003",
-    "\u0018\u0003\u0018\u0005\u0018\u00fe\n\u0018\u0006\u0018\u0100\n\u0018",
-    "\r\u0018\u000e\u0018\u0101\u0003\u0019\u0003\u0019\u0003\u0019\u0003",
-    "\u0019\u0003\u0019\u0003\u001a\u0003\u001a\u0003\u001a\u0003\u001a\u0003",
-    "\u001a\u0003\u001b\u0003\u001b\u0003\u001b\u0005\u001b\u0111\n\u001b",
-    "\u0006\u001b\u0113\n\u001b\r\u001b\u000e\u001b\u0114\u0003\u001b\u0002",
-    "\u0003(\u001c\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012\u0014\u0016",
-    "\u0018\u001a\u001c\u001e \"$&(*,.024\u0002\u000b\u0004\u0002##\',\u0005",
-    "\u0002 \"$033\u0004\u0002\u0018\u0018\u001c\u001c\u0003\u0002%&\u0003",
-    "\u0002\u0010\u0015\u0003\u0002\u0016\u0017\u0003\u0002\u0019\u001a\u0004",
-    "\u0002\u001b\u001f44\u0003\u0002#$\u0002\u0125\u00026\u0003\u0002\u0002",
-    "\u0002\u0004:\u0003\u0002\u0002\u0002\u0006B\u0003\u0002\u0002\u0002",
-    "\bM\u0003\u0002\u0002\u0002\nY\u0003\u0002\u0002\u0002\f[\u0003\u0002",
-    "\u0002\u0002\u000e]\u0003\u0002\u0002\u0002\u0010a\u0003\u0002\u0002",
-    "\u0002\u0012q\u0003\u0002\u0002\u0002\u0014s\u0003\u0002\u0002\u0002",
-    "\u0016{\u0003\u0002\u0002\u0002\u0018~\u0003\u0002\u0002\u0002\u001a",
-    "\u0087\u0003\u0002\u0002\u0002\u001c\u008a\u0003\u0002\u0002\u0002\u001e",
-    "\u0093\u0003\u0002\u0002\u0002 \u0096\u0003\u0002\u0002\u0002\"\u009f",
-    "\u0003\u0002\u0002\u0002$\u00b0\u0003\u0002\u0002\u0002&\u00b2\u0003",
-    "\u0002\u0002\u0002(\u00ce\u0003\u0002\u0002\u0002*\u00f4\u0003\u0002",
-    "\u0002\u0002,\u00f6\u0003\u0002\u0002\u0002.\u00ff\u0003\u0002\u0002",
-    "\u00020\u0103\u0003\u0002\u0002\u00022\u0108\u0003\u0002\u0002\u0002",
-    "4\u0112\u0003\u0002\u0002\u000267\u00070\u0002\u000278\u0005\u0004\u0003",
-    "\u000289\u0005\u0006\u0004\u00029\u0003\u0003\u0002\u0002\u0002:?\u0005",
-    "&\u0014\u0002;<\u0007\f\u0002\u0002<>\u0005&\u0014\u0002=;\u0003\u0002",
-    "\u0002\u0002>A\u0003\u0002\u0002\u0002?=\u0003\u0002\u0002\u0002?@\u0003",
-    "\u0002\u0002\u0002@\u0005\u0003\u0002\u0002\u0002A?\u0003\u0002\u0002",
-    "\u0002BH\u0007\u0005\u0002\u0002CG\u0005\u000e\b\u0002DG\u0005\f\u0007",
-    "\u0002EG\u0005\"\u0012\u0002FC\u0003\u0002\u0002\u0002FD\u0003\u0002",
-    "\u0002\u0002FE\u0003\u0002\u0002\u0002GJ\u0003\u0002\u0002\u0002HF\u0003",
-    "\u0002\u0002\u0002HI\u0003\u0002\u0002\u0002IK\u0003\u0002\u0002\u0002",
-    "JH\u0003\u0002\u0002\u0002KL\u0007\u0006\u0002\u0002L\u0007\u0003\u0002",
-    "\u0002\u0002MT\u0007\u0005\u0002\u0002NS\u0005\u0010\t\u0002OS\u0005",
-    "\u000e\b\u0002PS\u00076\u0002\u0002QS\u0005\"\u0012\u0002RN\u0003\u0002",
-    "\u0002\u0002RO\u0003\u0002\u0002\u0002RP\u0003\u0002\u0002\u0002RQ\u0003",
-    "\u0002\u0002\u0002SV\u0003\u0002\u0002\u0002TR\u0003\u0002\u0002\u0002",
-    "TU\u0003\u0002\u0002\u0002UW\u0003\u0002\u0002\u0002VT\u0003\u0002\u0002",
-    "\u0002WX\u0007\u0006\u0002\u0002X\t\u0003\u0002\u0002\u0002YZ\t\u0002",
-    "\u0002\u0002Z\u000b\u0003\u0002\u0002\u0002[\\\u00076\u0002\u0002\\",
-    "\r\u0003\u0002\u0002\u0002]^\u0007!\u0002\u0002^_\u00054\u001b\u0002",
-    "_`\u0005\b\u0005\u0002`\u000f\u0003\u0002\u0002\u0002ab\u0007 \u0002",
-    "\u0002bg\u0005\n\u0006\u0002cd\u0007\u000e\u0002\u0002df\u0005\n\u0006",
-    "\u0002ec\u0003\u0002\u0002\u0002fi\u0003\u0002\u0002\u0002ge\u0003\u0002",
-    "\u0002\u0002gh\u0003\u0002\u0002\u0002hm\u0003\u0002\u0002\u0002ig\u0003",
-    "\u0002\u0002\u0002jk\u0007\r\u0002\u0002kl\u0007\"\u0002\u0002ln\u0005",
-    "(\u0015\u0002mj\u0003\u0002\u0002\u0002mn\u0003\u0002\u0002\u0002no",
-    "\u0003\u0002\u0002\u0002op\u0007\u000f\u0002\u0002p\u0011\u0003\u0002",
-    "\u0002\u0002qr\u00073\u0002\u0002r\u0013\u0003\u0002\u0002\u0002st\u0007",
-    "\u0005\u0002\u0002tw\u00073\u0002\u0002uv\u0007\u0003\u0002\u0002vx",
-    "\u0007\u0004\u0002\u0002wu\u0003\u0002\u0002\u0002wx\u0003\u0002\u0002",
-    "\u0002xy\u0003\u0002\u0002\u0002yz\u0007\u0006\u0002\u0002z\u0015\u0003",
-    "\u0002\u0002\u0002{|\u0005(\u0015\u0002|\u0017\u0003\u0002\u0002\u0002",
-    "}\u007f\u0005\u0016\f\u0002~}\u0003\u0002\u0002\u0002~\u007f\u0003\u0002",
-    "\u0002\u0002\u007f\u0084\u0003\u0002\u0002\u0002\u0080\u0081\u0007\u000e",
-    "\u0002\u0002\u0081\u0083\u0005\u0016\f\u0002\u0082\u0080\u0003\u0002",
-    "\u0002\u0002\u0083\u0086\u0003\u0002\u0002\u0002\u0084\u0082\u0003\u0002",
-    "\u0002\u0002\u0084\u0085\u0003\u0002\u0002\u0002\u0085\u0019\u0003\u0002",
-    "\u0002\u0002\u0086\u0084\u0003\u0002\u0002\u0002\u0087\u0088\u0005(",
-    "\u0015\u0002\u0088\u001b\u0003\u0002\u0002\u0002\u0089\u008b\u0005\u001a",
-    "\u000e\u0002\u008a\u0089\u0003\u0002\u0002\u0002\u008a\u008b\u0003\u0002",
-    "\u0002\u0002\u008b\u0090\u0003\u0002\u0002\u0002\u008c\u008d\u0007\u000e",
-    "\u0002\u0002\u008d\u008f\u0005\u001a\u000e\u0002\u008e\u008c\u0003\u0002",
-    "\u0002\u0002\u008f\u0092\u0003\u0002\u0002\u0002\u0090\u008e\u0003\u0002",
-    "\u0002\u0002\u0090\u0091\u0003\u0002\u0002\u0002\u0091\u001d\u0003\u0002",
-    "\u0002\u0002\u0092\u0090\u0003\u0002\u0002\u0002\u0093\u0094\u00073",
-    "\u0002\u0002\u0094\u001f\u0003\u0002\u0002\u0002\u0095\u0097\u0005\u001e",
-    "\u0010\u0002\u0096\u0095\u0003\u0002\u0002\u0002\u0096\u0097\u0003\u0002",
-    "\u0002\u0002\u0097\u009c\u0003\u0002\u0002\u0002\u0098\u0099\u0007\u000e",
-    "\u0002\u0002\u0099\u009b\u0005\u001e\u0010\u0002\u009a\u0098\u0003\u0002",
-    "\u0002\u0002\u009b\u009e\u0003\u0002\u0002\u0002\u009c\u009a\u0003\u0002",
-    "\u0002\u0002\u009c\u009d\u0003\u0002\u0002\u0002\u009d!\u0003\u0002",
-    "\u0002\u0002\u009e\u009c\u0003\u0002\u0002\u0002\u009f\u00a0\u0007-",
-    "\u0002\u0002\u00a0\u00a1\u00073\u0002\u0002\u00a1\u00a2\u0007\u0007",
-    "\u0002\u0002\u00a2\u00a3\u0005 \u0011\u0002\u00a3\u00a4\u0007\b\u0002",
-    "\u0002\u00a4\u00a5\u0007\u0005\u0002\u0002\u00a5\u00a6\u0007.\u0002",
-    "\u0002\u00a6\u00a7\u0005(\u0015\u0002\u00a7\u00a8\u0007\u000f\u0002",
-    "\u0002\u00a8\u00a9\u0007\u0006\u0002\u0002\u00a9#\u0003\u0002\u0002",
-    "\u0002\u00aa\u00ab\u0007\f\u0002\u0002\u00ab\u00b1\u0005&\u0014\u0002",
-    "\u00ac\u00ad\u0007\n\u0002\u0002\u00ad\u00ae\u0005(\u0015\u0002\u00ae",
-    "\u00af\u0007\u000b\u0002\u0002\u00af\u00b1\u0003\u0002\u0002\u0002\u00b0",
-    "\u00aa\u0003\u0002\u0002\u0002\u00b0\u00ac\u0003\u0002\u0002\u0002\u00b1",
-    "%\u0003\u0002\u0002\u0002\u00b2\u00b3\t\u0003\u0002\u0002\u00b3\'\u0003",
-    "\u0002\u0002\u0002\u00b4\u00b5\b\u0015\u0001\u0002\u00b5\u00cf\u0007",
-    "/\u0002\u0002\u00b6\u00b8\u0007\n\u0002\u0002\u00b7\u00b9\u0005(\u0015",
-    "\u0002\u00b8\u00b7\u0003\u0002\u0002\u0002\u00b8\u00b9\u0003\u0002\u0002",
-    "\u0002\u00b9\u00be\u0003\u0002\u0002\u0002\u00ba\u00bb\u0007\u000e\u0002",
-    "\u0002\u00bb\u00bd\u0005(\u0015\u0002\u00bc\u00ba\u0003\u0002\u0002",
-    "\u0002\u00bd\u00c0\u0003\u0002\u0002\u0002\u00be\u00bc\u0003\u0002\u0002",
-    "\u0002\u00be\u00bf\u0003\u0002\u0002\u0002\u00bf\u00c1\u0003\u0002\u0002",
-    "\u0002\u00c0\u00be\u0003\u0002\u0002\u0002\u00c1\u00cf\u0007\u000b\u0002",
-    "\u0002\u00c2\u00c3\t\u0004\u0002\u0002\u00c3\u00cf\u0005(\u0015\n\u00c4",
-    "\u00cf\u00072\u0002\u0002\u00c5\u00cf\u00071\u0002\u0002\u00c6\u00cf",
-    "\t\u0005\u0002\u0002\u00c7\u00cf\u00073\u0002\u0002\u00c8\u00cf\u0005",
-    "0\u0019\u0002\u00c9\u00cf\u00052\u001a\u0002\u00ca\u00cb\u0007\u0007",
-    "\u0002\u0002\u00cb\u00cc\u0005(\u0015\u0002\u00cc\u00cd\u0007\b\u0002",
-    "\u0002\u00cd\u00cf\u0003\u0002\u0002\u0002\u00ce\u00b4\u0003\u0002\u0002",
-    "\u0002\u00ce\u00b6\u0003\u0002\u0002\u0002\u00ce\u00c2\u0003\u0002\u0002",
-    "\u0002\u00ce\u00c4\u0003\u0002\u0002\u0002\u00ce\u00c5\u0003\u0002\u0002",
-    "\u0002\u00ce\u00c6\u0003\u0002\u0002\u0002\u00ce\u00c7\u0003\u0002\u0002",
-    "\u0002\u00ce\u00c8\u0003\u0002\u0002\u0002\u00ce\u00c9\u0003\u0002\u0002",
-    "\u0002\u00ce\u00ca\u0003\u0002\u0002\u0002\u00cf\u00f1\u0003\u0002\u0002",
-    "\u0002\u00d0\u00d1\f\u0012\u0002\u0002\u00d1\u00d2\t\u0006\u0002\u0002",
-    "\u00d2\u00f0\u0005(\u0015\u0013\u00d3\u00d4\f\u0011\u0002\u0002\u00d4",
-    "\u00d5\t\u0007\u0002\u0002\u00d5\u00f0\u0005(\u0015\u0012\u00d6\u00d7",
-    "\f\u0010\u0002\u0002\u00d7\u00d8\t\b\u0002\u0002\u00d8\u00f0\u0005(",
-    "\u0015\u0011\u00d9\u00da\f\u000f\u0002\u0002\u00da\u00db\t\t\u0002\u0002",
-    "\u00db\u00f0\u0005(\u0015\u0010\u00dc\u00dd\f\u000e\u0002\u0002\u00dd",
-    "\u00de\u0007\f\u0002\u0002\u00de\u00f0\u0005&\u0014\u0002\u00df\u00e0",
-    "\f\r\u0002\u0002\u00e0\u00e1\u0007\f\u0002\u0002\u00e1\u00e2\u0005&",
-    "\u0014\u0002\u00e2\u00e3\u0007\u0007\u0002\u0002\u00e3\u00e4\u0005\u001c",
-    "\u000f\u0002\u00e4\u00e5\u0007\b\u0002\u0002\u00e5\u00f0\u0003\u0002",
-    "\u0002\u0002\u00e6\u00e7\f\f\u0002\u0002\u00e7\u00e8\u0007\n\u0002\u0002",
-    "\u00e8\u00eb\u0005(\u0015\u0002\u00e9\u00ea\u0007\r\u0002\u0002\u00ea",
-    "\u00ec\u0005(\u0015\u0002\u00eb\u00e9\u0003\u0002\u0002\u0002\u00eb",
-    "\u00ec\u0003\u0002\u0002\u0002\u00ec\u00ed\u0003\u0002\u0002\u0002\u00ed",
-    "\u00ee\u0007\u000b\u0002\u0002\u00ee\u00f0\u0003\u0002\u0002\u0002\u00ef",
-    "\u00d0\u0003\u0002\u0002\u0002\u00ef\u00d3\u0003\u0002\u0002\u0002\u00ef",
-    "\u00d6\u0003\u0002\u0002\u0002\u00ef\u00d9\u0003\u0002\u0002\u0002\u00ef",
-    "\u00dc\u0003\u0002\u0002\u0002\u00ef\u00df\u0003\u0002\u0002\u0002\u00ef",
-    "\u00e6\u0003\u0002\u0002\u0002\u00f0\u00f3\u0003\u0002\u0002\u0002\u00f1",
-    "\u00ef\u0003\u0002\u0002\u0002\u00f1\u00f2\u0003\u0002\u0002\u0002\u00f2",
-    ")\u0003\u0002\u0002\u0002\u00f3\u00f1\u0003\u0002\u0002\u0002\u00f4",
-    "\u00f5\u00073\u0002\u0002\u00f5+\u0003\u0002\u0002\u0002\u00f6\u00f7",
-    "\u0007\t\u0002\u0002\u00f7\u00f8\u0005(\u0015\u0002\u00f8\u00f9\u0007",
-    "\b\u0002\u0002\u00f9-\u0003\u0002\u0002\u0002\u00fa\u00fd\u00074\u0002",
-    "\u0002\u00fb\u00fe\u0005\u0012\n\u0002\u00fc\u00fe\u0005,\u0017\u0002",
-    "\u00fd\u00fb\u0003\u0002\u0002\u0002\u00fd\u00fc\u0003\u0002\u0002\u0002",
-    "\u00fe\u0100\u0003\u0002\u0002\u0002\u00ff\u00fa\u0003\u0002\u0002\u0002",
-    "\u0100\u0101\u0003\u0002\u0002\u0002\u0101\u00ff\u0003\u0002\u0002\u0002",
-    "\u0101\u0102\u0003\u0002\u0002\u0002\u0102/\u0003\u0002\u0002\u0002",
-    "\u0103\u0104\t\n\u0002\u0002\u0104\u0105\u0007\u0007\u0002\u0002\u0105",
-    "\u0106\u0005.\u0018\u0002\u0106\u0107\u0007\b\u0002\u0002\u01071\u0003",
-    "\u0002\u0002\u0002\u0108\u0109\u00073\u0002\u0002\u0109\u010a\u0007",
-    "\u0007\u0002\u0002\u010a\u010b\u0005\u0018\r\u0002\u010b\u010c\u0007",
-    "\b\u0002\u0002\u010c3\u0003\u0002\u0002\u0002\u010d\u0110\u00074\u0002",
-    "\u0002\u010e\u0111\u00073\u0002\u0002\u010f\u0111\u0005\u0014\u000b",
-    "\u0002\u0110\u010e\u0003\u0002\u0002\u0002\u0110\u010f\u0003\u0002\u0002",
-    "\u0002\u0111\u0113\u0003\u0002\u0002\u0002\u0112\u010d\u0003\u0002\u0002",
-    "\u0002\u0113\u0114\u0003\u0002\u0002\u0002\u0114\u0112\u0003\u0002\u0002",
-    "\u0002\u0114\u0115\u0003\u0002\u0002\u0002\u01155\u0003\u0002\u0002",
-    "\u0002\u001b?FHRTgmw~\u0084\u008a\u0090\u0096\u009c\u00b0\u00b8\u00be",
-    "\u00ce\u00eb\u00ef\u00f1\u00fd\u0101\u0110\u0114"].join("");
+    "\u0015\u0003\u0015\u0003\u0015\u0003\u0015\u0005\u0015\u00ef\n\u0015",
+    "\u0003\u0015\u0003\u0015\u0007\u0015\u00f3\n\u0015\f\u0015\u000e\u0015",
+    "\u00f6\u000b\u0015\u0003\u0016\u0003\u0016\u0003\u0017\u0003\u0017\u0003",
+    "\u0017\u0003\u0017\u0003\u0018\u0003\u0018\u0003\u0018\u0005\u0018\u0101",
+    "\n\u0018\u0006\u0018\u0103\n\u0018\r\u0018\u000e\u0018\u0104\u0003\u0019",
+    "\u0003\u0019\u0003\u0019\u0003\u0019\u0003\u0019\u0003\u001a\u0003\u001a",
+    "\u0003\u001a\u0003\u001a\u0003\u001a\u0003\u001b\u0003\u001b\u0003\u001b",
+    "\u0005\u001b\u0114\n\u001b\u0006\u001b\u0116\n\u001b\r\u001b\u000e\u001b",
+    "\u0117\u0003\u001b\u0002\u0003(\u001c\u0002\u0004\u0006\b\n\f\u000e",
+    "\u0010\u0012\u0014\u0016\u0018\u001a\u001c\u001e \"$&(*,.024\u0002\u000b",
+    "\u0004\u0002$$(-\u0005\u0002!#%144\u0004\u0002\u0018\u0018\u001c\u001c",
+    "\u0003\u0002&\'\u0003\u0002\u0010\u0015\u0003\u0002\u0016\u0017\u0003",
+    "\u0002\u0019\u001a\u0004\u0002\u001b\u001f55\u0003\u0002$%\u0002\u0129",
+    "\u00026\u0003\u0002\u0002\u0002\u0004:\u0003\u0002\u0002\u0002\u0006",
+    "B\u0003\u0002\u0002\u0002\bM\u0003\u0002\u0002\u0002\nY\u0003\u0002",
+    "\u0002\u0002\f[\u0003\u0002\u0002\u0002\u000e]\u0003\u0002\u0002\u0002",
+    "\u0010a\u0003\u0002\u0002\u0002\u0012q\u0003\u0002\u0002\u0002\u0014",
+    "s\u0003\u0002\u0002\u0002\u0016{\u0003\u0002\u0002\u0002\u0018~\u0003",
+    "\u0002\u0002\u0002\u001a\u0087\u0003\u0002\u0002\u0002\u001c\u008a\u0003",
+    "\u0002\u0002\u0002\u001e\u0093\u0003\u0002\u0002\u0002 \u0096\u0003",
+    "\u0002\u0002\u0002\"\u009f\u0003\u0002\u0002\u0002$\u00b0\u0003\u0002",
+    "\u0002\u0002&\u00b2\u0003\u0002\u0002\u0002(\u00ce\u0003\u0002\u0002",
+    "\u0002*\u00f7\u0003\u0002\u0002\u0002,\u00f9\u0003\u0002\u0002\u0002",
+    ".\u0102\u0003\u0002\u0002\u00020\u0106\u0003\u0002\u0002\u00022\u010b",
+    "\u0003\u0002\u0002\u00024\u0115\u0003\u0002\u0002\u000267\u00071\u0002",
+    "\u000278\u0005\u0004\u0003\u000289\u0005\u0006\u0004\u00029\u0003\u0003",
+    "\u0002\u0002\u0002:?\u0005&\u0014\u0002;<\u0007\f\u0002\u0002<>\u0005",
+    "&\u0014\u0002=;\u0003\u0002\u0002\u0002>A\u0003\u0002\u0002\u0002?=",
+    "\u0003\u0002\u0002\u0002?@\u0003\u0002\u0002\u0002@\u0005\u0003\u0002",
+    "\u0002\u0002A?\u0003\u0002\u0002\u0002BH\u0007\u0005\u0002\u0002CG\u0005",
+    "\u000e\b\u0002DG\u0005\f\u0007\u0002EG\u0005\"\u0012\u0002FC\u0003\u0002",
+    "\u0002\u0002FD\u0003\u0002\u0002\u0002FE\u0003\u0002\u0002\u0002GJ\u0003",
+    "\u0002\u0002\u0002HF\u0003\u0002\u0002\u0002HI\u0003\u0002\u0002\u0002",
+    "IK\u0003\u0002\u0002\u0002JH\u0003\u0002\u0002\u0002KL\u0007\u0006\u0002",
+    "\u0002L\u0007\u0003\u0002\u0002\u0002MT\u0007\u0005\u0002\u0002NS\u0005",
+    "\u0010\t\u0002OS\u0005\u000e\b\u0002PS\u00077\u0002\u0002QS\u0005\"",
+    "\u0012\u0002RN\u0003\u0002\u0002\u0002RO\u0003\u0002\u0002\u0002RP\u0003",
+    "\u0002\u0002\u0002RQ\u0003\u0002\u0002\u0002SV\u0003\u0002\u0002\u0002",
+    "TR\u0003\u0002\u0002\u0002TU\u0003\u0002\u0002\u0002UW\u0003\u0002\u0002",
+    "\u0002VT\u0003\u0002\u0002\u0002WX\u0007\u0006\u0002\u0002X\t\u0003",
+    "\u0002\u0002\u0002YZ\t\u0002\u0002\u0002Z\u000b\u0003\u0002\u0002\u0002",
+    "[\\\u00077\u0002\u0002\\\r\u0003\u0002\u0002\u0002]^\u0007\"\u0002\u0002",
+    "^_\u00054\u001b\u0002_`\u0005\b\u0005\u0002`\u000f\u0003\u0002\u0002",
+    "\u0002ab\u0007!\u0002\u0002bg\u0005\n\u0006\u0002cd\u0007\u000e\u0002",
+    "\u0002df\u0005\n\u0006\u0002ec\u0003\u0002\u0002\u0002fi\u0003\u0002",
+    "\u0002\u0002ge\u0003\u0002\u0002\u0002gh\u0003\u0002\u0002\u0002hm\u0003",
+    "\u0002\u0002\u0002ig\u0003\u0002\u0002\u0002jk\u0007\r\u0002\u0002k",
+    "l\u0007#\u0002\u0002ln\u0005(\u0015\u0002mj\u0003\u0002\u0002\u0002",
+    "mn\u0003\u0002\u0002\u0002no\u0003\u0002\u0002\u0002op\u0007\u000f\u0002",
+    "\u0002p\u0011\u0003\u0002\u0002\u0002qr\u00074\u0002\u0002r\u0013\u0003",
+    "\u0002\u0002\u0002st\u0007\u0005\u0002\u0002tw\u00074\u0002\u0002uv",
+    "\u0007\u0003\u0002\u0002vx\u0007\u0004\u0002\u0002wu\u0003\u0002\u0002",
+    "\u0002wx\u0003\u0002\u0002\u0002xy\u0003\u0002\u0002\u0002yz\u0007\u0006",
+    "\u0002\u0002z\u0015\u0003\u0002\u0002\u0002{|\u0005(\u0015\u0002|\u0017",
+    "\u0003\u0002\u0002\u0002}\u007f\u0005\u0016\f\u0002~}\u0003\u0002\u0002",
+    "\u0002~\u007f\u0003\u0002\u0002\u0002\u007f\u0084\u0003\u0002\u0002",
+    "\u0002\u0080\u0081\u0007\u000e\u0002\u0002\u0081\u0083\u0005\u0016\f",
+    "\u0002\u0082\u0080\u0003\u0002\u0002\u0002\u0083\u0086\u0003\u0002\u0002",
+    "\u0002\u0084\u0082\u0003\u0002\u0002\u0002\u0084\u0085\u0003\u0002\u0002",
+    "\u0002\u0085\u0019\u0003\u0002\u0002\u0002\u0086\u0084\u0003\u0002\u0002",
+    "\u0002\u0087\u0088\u0005(\u0015\u0002\u0088\u001b\u0003\u0002\u0002",
+    "\u0002\u0089\u008b\u0005\u001a\u000e\u0002\u008a\u0089\u0003\u0002\u0002",
+    "\u0002\u008a\u008b\u0003\u0002\u0002\u0002\u008b\u0090\u0003\u0002\u0002",
+    "\u0002\u008c\u008d\u0007\u000e\u0002\u0002\u008d\u008f\u0005\u001a\u000e",
+    "\u0002\u008e\u008c\u0003\u0002\u0002\u0002\u008f\u0092\u0003\u0002\u0002",
+    "\u0002\u0090\u008e\u0003\u0002\u0002\u0002\u0090\u0091\u0003\u0002\u0002",
+    "\u0002\u0091\u001d\u0003\u0002\u0002\u0002\u0092\u0090\u0003\u0002\u0002",
+    "\u0002\u0093\u0094\u00074\u0002\u0002\u0094\u001f\u0003\u0002\u0002",
+    "\u0002\u0095\u0097\u0005\u001e\u0010\u0002\u0096\u0095\u0003\u0002\u0002",
+    "\u0002\u0096\u0097\u0003\u0002\u0002\u0002\u0097\u009c\u0003\u0002\u0002",
+    "\u0002\u0098\u0099\u0007\u000e\u0002\u0002\u0099\u009b\u0005\u001e\u0010",
+    "\u0002\u009a\u0098\u0003\u0002\u0002\u0002\u009b\u009e\u0003\u0002\u0002",
+    "\u0002\u009c\u009a\u0003\u0002\u0002\u0002\u009c\u009d\u0003\u0002\u0002",
+    "\u0002\u009d!\u0003\u0002\u0002\u0002\u009e\u009c\u0003\u0002\u0002",
+    "\u0002\u009f\u00a0\u0007.\u0002\u0002\u00a0\u00a1\u00074\u0002\u0002",
+    "\u00a1\u00a2\u0007\u0007\u0002\u0002\u00a2\u00a3\u0005 \u0011\u0002",
+    "\u00a3\u00a4\u0007\b\u0002\u0002\u00a4\u00a5\u0007\u0005\u0002\u0002",
+    "\u00a5\u00a6\u0007/\u0002\u0002\u00a6\u00a7\u0005(\u0015\u0002\u00a7",
+    "\u00a8\u0007\u000f\u0002\u0002\u00a8\u00a9\u0007\u0006\u0002\u0002\u00a9",
+    "#\u0003\u0002\u0002\u0002\u00aa\u00ab\u0007\f\u0002\u0002\u00ab\u00b1",
+    "\u0005&\u0014\u0002\u00ac\u00ad\u0007\n\u0002\u0002\u00ad\u00ae\u0005",
+    "(\u0015\u0002\u00ae\u00af\u0007\u000b\u0002\u0002\u00af\u00b1\u0003",
+    "\u0002\u0002\u0002\u00b0\u00aa\u0003\u0002\u0002\u0002\u00b0\u00ac\u0003",
+    "\u0002\u0002\u0002\u00b1%\u0003\u0002\u0002\u0002\u00b2\u00b3\t\u0003",
+    "\u0002\u0002\u00b3\'\u0003\u0002\u0002\u0002\u00b4\u00b5\b\u0015\u0001",
+    "\u0002\u00b5\u00cf\u00070\u0002\u0002\u00b6\u00b8\u0007\n\u0002\u0002",
+    "\u00b7\u00b9\u0005(\u0015\u0002\u00b8\u00b7\u0003\u0002\u0002\u0002",
+    "\u00b8\u00b9\u0003\u0002\u0002\u0002\u00b9\u00be\u0003\u0002\u0002\u0002",
+    "\u00ba\u00bb\u0007\u000e\u0002\u0002\u00bb\u00bd\u0005(\u0015\u0002",
+    "\u00bc\u00ba\u0003\u0002\u0002\u0002\u00bd\u00c0\u0003\u0002\u0002\u0002",
+    "\u00be\u00bc\u0003\u0002\u0002\u0002\u00be\u00bf\u0003\u0002\u0002\u0002",
+    "\u00bf\u00c1\u0003\u0002\u0002\u0002\u00c0\u00be\u0003\u0002\u0002\u0002",
+    "\u00c1\u00cf\u0007\u000b\u0002\u0002\u00c2\u00c3\t\u0004\u0002\u0002",
+    "\u00c3\u00cf\u0005(\u0015\n\u00c4\u00cf\u00073\u0002\u0002\u00c5\u00cf",
+    "\u00072\u0002\u0002\u00c6\u00cf\t\u0005\u0002\u0002\u00c7\u00cf\u0007",
+    "4\u0002\u0002\u00c8\u00cf\u00050\u0019\u0002\u00c9\u00cf\u00052\u001a",
+    "\u0002\u00ca\u00cb\u0007\u0007\u0002\u0002\u00cb\u00cc\u0005(\u0015",
+    "\u0002\u00cc\u00cd\u0007\b\u0002\u0002\u00cd\u00cf\u0003\u0002\u0002",
+    "\u0002\u00ce\u00b4\u0003\u0002\u0002\u0002\u00ce\u00b6\u0003\u0002\u0002",
+    "\u0002\u00ce\u00c2\u0003\u0002\u0002\u0002\u00ce\u00c4\u0003\u0002\u0002",
+    "\u0002\u00ce\u00c5\u0003\u0002\u0002\u0002\u00ce\u00c6\u0003\u0002\u0002",
+    "\u0002\u00ce\u00c7\u0003\u0002\u0002\u0002\u00ce\u00c8\u0003\u0002\u0002",
+    "\u0002\u00ce\u00c9\u0003\u0002\u0002\u0002\u00ce\u00ca\u0003\u0002\u0002",
+    "\u0002\u00cf\u00f4\u0003\u0002\u0002\u0002\u00d0\u00d1\f\u0013\u0002",
+    "\u0002\u00d1\u00d2\t\u0006\u0002\u0002\u00d2\u00f3\u0005(\u0015\u0014",
+    "\u00d3\u00d4\f\u0012\u0002\u0002\u00d4\u00d5\t\u0007\u0002\u0002\u00d5",
+    "\u00f3\u0005(\u0015\u0013\u00d6\u00d7\f\u0011\u0002\u0002\u00d7\u00d8",
+    "\t\b\u0002\u0002\u00d8\u00f3\u0005(\u0015\u0012\u00d9\u00da\f\u0010",
+    "\u0002\u0002\u00da\u00db\t\t\u0002\u0002\u00db\u00f3\u0005(\u0015\u0011",
+    "\u00dc\u00dd\f\u000f\u0002\u0002\u00dd\u00de\u0007 \u0002\u0002\u00de",
+    "\u00f3\u0005(\u0015\u0010\u00df\u00e0\f\u000e\u0002\u0002\u00e0\u00e1",
+    "\u0007\f\u0002\u0002\u00e1\u00f3\u0005&\u0014\u0002\u00e2\u00e3\f\r",
+    "\u0002\u0002\u00e3\u00e4\u0007\f\u0002\u0002\u00e4\u00e5\u0005&\u0014",
+    "\u0002\u00e5\u00e6\u0007\u0007\u0002\u0002\u00e6\u00e7\u0005\u001c\u000f",
+    "\u0002\u00e7\u00e8\u0007\b\u0002\u0002\u00e8\u00f3\u0003\u0002\u0002",
+    "\u0002\u00e9\u00ea\f\f\u0002\u0002\u00ea\u00eb\u0007\n\u0002\u0002\u00eb",
+    "\u00ee\u0005(\u0015\u0002\u00ec\u00ed\u0007\r\u0002\u0002\u00ed\u00ef",
+    "\u0005(\u0015\u0002\u00ee\u00ec\u0003\u0002\u0002\u0002\u00ee\u00ef",
+    "\u0003\u0002\u0002\u0002\u00ef\u00f0\u0003\u0002\u0002\u0002\u00f0\u00f1",
+    "\u0007\u000b\u0002\u0002\u00f1\u00f3\u0003\u0002\u0002\u0002\u00f2\u00d0",
+    "\u0003\u0002\u0002\u0002\u00f2\u00d3\u0003\u0002\u0002\u0002\u00f2\u00d6",
+    "\u0003\u0002\u0002\u0002\u00f2\u00d9\u0003\u0002\u0002\u0002\u00f2\u00dc",
+    "\u0003\u0002\u0002\u0002\u00f2\u00df\u0003\u0002\u0002\u0002\u00f2\u00e2",
+    "\u0003\u0002\u0002\u0002\u00f2\u00e9\u0003\u0002\u0002\u0002\u00f3\u00f6",
+    "\u0003\u0002\u0002\u0002\u00f4\u00f2\u0003\u0002\u0002\u0002\u00f4\u00f5",
+    "\u0003\u0002\u0002\u0002\u00f5)\u0003\u0002\u0002\u0002\u00f6\u00f4",
+    "\u0003\u0002\u0002\u0002\u00f7\u00f8\u00074\u0002\u0002\u00f8+\u0003",
+    "\u0002\u0002\u0002\u00f9\u00fa\u0007\t\u0002\u0002\u00fa\u00fb\u0005",
+    "(\u0015\u0002\u00fb\u00fc\u0007\b\u0002\u0002\u00fc-\u0003\u0002\u0002",
+    "\u0002\u00fd\u0100\u00075\u0002\u0002\u00fe\u0101\u0005\u0012\n\u0002",
+    "\u00ff\u0101\u0005,\u0017\u0002\u0100\u00fe\u0003\u0002\u0002\u0002",
+    "\u0100\u00ff\u0003\u0002\u0002\u0002\u0101\u0103\u0003\u0002\u0002\u0002",
+    "\u0102\u00fd\u0003\u0002\u0002\u0002\u0103\u0104\u0003\u0002\u0002\u0002",
+    "\u0104\u0102\u0003\u0002\u0002\u0002\u0104\u0105\u0003\u0002\u0002\u0002",
+    "\u0105/\u0003\u0002\u0002\u0002\u0106\u0107\t\n\u0002\u0002\u0107\u0108",
+    "\u0007\u0007\u0002\u0002\u0108\u0109\u0005.\u0018\u0002\u0109\u010a",
+    "\u0007\b\u0002\u0002\u010a1\u0003\u0002\u0002\u0002\u010b\u010c\u0007",
+    "4\u0002\u0002\u010c\u010d\u0007\u0007\u0002\u0002\u010d\u010e\u0005",
+    "\u0018\r\u0002\u010e\u010f\u0007\b\u0002\u0002\u010f3\u0003\u0002\u0002",
+    "\u0002\u0110\u0113\u00075\u0002\u0002\u0111\u0114\u00074\u0002\u0002",
+    "\u0112\u0114\u0005\u0014\u000b\u0002\u0113\u0111\u0003\u0002\u0002\u0002",
+    "\u0113\u0112\u0003\u0002\u0002\u0002\u0114\u0116\u0003\u0002\u0002\u0002",
+    "\u0115\u0110\u0003\u0002\u0002\u0002\u0116\u0117\u0003\u0002\u0002\u0002",
+    "\u0117\u0115\u0003\u0002\u0002\u0002\u0117\u0118\u0003\u0002\u0002\u0002",
+    "\u01185\u0003\u0002\u0002\u0002\u001b?FHRTgmw~\u0084\u008a\u0090\u0096",
+    "\u009c\u00b0\u00b8\u00be\u00ce\u00ee\u00f2\u00f4\u0100\u0104\u0113\u0117"].join("");
 
 
 var atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
@@ -198,11 +198,11 @@ var sharedContextCache = new antlr4.PredictionContextCache();
 var literalNames = [ null, "'='", "'**'", "'{'", "'}'", "'('", "')'", "'$('", 
                      "'['", "']'", "'.'", "':'", "','", "';'", "'<'", "'<='", 
                      "'>='", "'>'", "'=='", "'!='", "'&&'", "'||'", "'!'", 
-                     "'&'", "'|'", "'+'", "'-'", "'*'", "'^'", "'%'", "'allow'", 
-                     "'match'", "'if'", "'get'", "'exists'", "'true'", "'false'", 
-                     "'list'", "'create'", "'update'", "'read'", "'write'", 
-                     "'delete'", "'function'", "'return'", "'null'", "'service'", 
-                     null, null, null, "'/'" ];
+                     "'&'", "'|'", "'+'", "'-'", "'*'", "'^'", "'%'", "'in'", 
+                     "'allow'", "'match'", "'if'", "'get'", "'exists'", 
+                     "'true'", "'false'", "'list'", "'create'", "'update'", 
+                     "'read'", "'write'", "'delete'", "'function'", "'return'", 
+                     "'null'", "'service'", null, null, null, "'/'" ];
 
 var symbolicNames = [ null, null, null, "CurlyOpen", "CurlyClose", "BracketOpen", 
                       "BracketClose", "PathVariableBracket", "SquareBracketOpen", 
@@ -211,10 +211,10 @@ var symbolicNames = [ null, null, null, "CurlyOpen", "CurlyClose", "BracketOpen"
                       "Equals", "Unequal", "LogicalAnd", "LogicalOr", "LogicalNot", 
                       "BinaryAnd", "BinaryOr", "ArithmeticAdd", "ArithmeticSub", 
                       "ArithmeticMul", "ArithmeticExp", "ArithmeticModus", 
-                      "Allow", "Match", "If", "Get", "Exists", "True", "False", 
-                      "List", "Create", "Update", "Read", "Write", "Delete", 
-                      "Function", "Return", "Null", "Service", "Number", 
-                      "String", "Identifier", "Slash", "WS", "Comment" ];
+                      "InOperator", "Allow", "Match", "If", "Get", "Exists", 
+                      "True", "False", "List", "Create", "Update", "Read", 
+                      "Write", "Delete", "Function", "Return", "Null", "Service", 
+                      "Number", "String", "Identifier", "Slash", "WS", "Comment" ];
 
 var ruleNames =  [ "service", "namespaceIdentifier", "namespaceBlock", "matchBlock", 
                    "allowKey", "comment", "matcher", "allow", "getPathVariable", 
@@ -272,29 +272,30 @@ FirebaseRulesParser.ArithmeticSub = 26;
 FirebaseRulesParser.ArithmeticMul = 27;
 FirebaseRulesParser.ArithmeticExp = 28;
 FirebaseRulesParser.ArithmeticModus = 29;
-FirebaseRulesParser.Allow = 30;
-FirebaseRulesParser.Match = 31;
-FirebaseRulesParser.If = 32;
-FirebaseRulesParser.Get = 33;
-FirebaseRulesParser.Exists = 34;
-FirebaseRulesParser.True = 35;
-FirebaseRulesParser.False = 36;
-FirebaseRulesParser.List = 37;
-FirebaseRulesParser.Create = 38;
-FirebaseRulesParser.Update = 39;
-FirebaseRulesParser.Read = 40;
-FirebaseRulesParser.Write = 41;
-FirebaseRulesParser.Delete = 42;
-FirebaseRulesParser.Function = 43;
-FirebaseRulesParser.Return = 44;
-FirebaseRulesParser.Null = 45;
-FirebaseRulesParser.Service = 46;
-FirebaseRulesParser.Number = 47;
-FirebaseRulesParser.String = 48;
-FirebaseRulesParser.Identifier = 49;
-FirebaseRulesParser.Slash = 50;
-FirebaseRulesParser.WS = 51;
-FirebaseRulesParser.Comment = 52;
+FirebaseRulesParser.InOperator = 30;
+FirebaseRulesParser.Allow = 31;
+FirebaseRulesParser.Match = 32;
+FirebaseRulesParser.If = 33;
+FirebaseRulesParser.Get = 34;
+FirebaseRulesParser.Exists = 35;
+FirebaseRulesParser.True = 36;
+FirebaseRulesParser.False = 37;
+FirebaseRulesParser.List = 38;
+FirebaseRulesParser.Create = 39;
+FirebaseRulesParser.Update = 40;
+FirebaseRulesParser.Read = 41;
+FirebaseRulesParser.Write = 42;
+FirebaseRulesParser.Delete = 43;
+FirebaseRulesParser.Function = 44;
+FirebaseRulesParser.Return = 45;
+FirebaseRulesParser.Null = 46;
+FirebaseRulesParser.Service = 47;
+FirebaseRulesParser.Number = 48;
+FirebaseRulesParser.String = 49;
+FirebaseRulesParser.Identifier = 50;
+FirebaseRulesParser.Slash = 51;
+FirebaseRulesParser.WS = 52;
+FirebaseRulesParser.Comment = 53;
 
 FirebaseRulesParser.RULE_service = 0;
 FirebaseRulesParser.RULE_namespaceIdentifier = 1;
@@ -361,14 +362,6 @@ ServiceContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitService(this);
 	}
-};
-
-ServiceContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitService(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -451,14 +444,6 @@ NamespaceIdentifierContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitNamespaceIdentifier(this);
 	}
-};
-
-NamespaceIdentifierContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitNamespaceIdentifier(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -570,14 +555,6 @@ NamespaceBlockContext.prototype.exitRule = function(listener) {
 	}
 };
 
-NamespaceBlockContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitNamespaceBlock(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -595,7 +572,7 @@ FirebaseRulesParser.prototype.namespaceBlock = function() {
         this.state = 70;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while(((((_la - 31)) & ~0x1f) == 0 && ((1 << (_la - 31)) & ((1 << (FirebaseRulesParser.Match - 31)) | (1 << (FirebaseRulesParser.Function - 31)) | (1 << (FirebaseRulesParser.Comment - 31)))) !== 0)) {
+        while(((((_la - 32)) & ~0x1f) == 0 && ((1 << (_la - 32)) & ((1 << (FirebaseRulesParser.Match - 32)) | (1 << (FirebaseRulesParser.Function - 32)) | (1 << (FirebaseRulesParser.Comment - 32)))) !== 0)) {
             this.state = 68;
             this._errHandler.sync(this);
             switch(this._input.LA(1)) {
@@ -715,14 +692,6 @@ MatchBlockContext.prototype.exitRule = function(listener) {
 	}
 };
 
-MatchBlockContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMatchBlock(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -740,7 +709,7 @@ FirebaseRulesParser.prototype.matchBlock = function() {
         this.state = 82;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while(((((_la - 30)) & ~0x1f) == 0 && ((1 << (_la - 30)) & ((1 << (FirebaseRulesParser.Allow - 30)) | (1 << (FirebaseRulesParser.Match - 30)) | (1 << (FirebaseRulesParser.Function - 30)) | (1 << (FirebaseRulesParser.Comment - 30)))) !== 0)) {
+        while(((((_la - 31)) & ~0x1f) == 0 && ((1 << (_la - 31)) & ((1 << (FirebaseRulesParser.Allow - 31)) | (1 << (FirebaseRulesParser.Match - 31)) | (1 << (FirebaseRulesParser.Function - 31)) | (1 << (FirebaseRulesParser.Comment - 31)))) !== 0)) {
             this.state = 80;
             this._errHandler.sync(this);
             switch(this._input.LA(1)) {
@@ -839,14 +808,6 @@ AllowKeyContext.prototype.exitRule = function(listener) {
 	}
 };
 
-AllowKeyContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitAllowKey(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -861,7 +822,7 @@ FirebaseRulesParser.prototype.allowKey = function() {
         this.enterOuterAlt(localctx, 1);
         this.state = 87;
         _la = this._input.LA(1);
-        if(!(((((_la - 33)) & ~0x1f) == 0 && ((1 << (_la - 33)) & ((1 << (FirebaseRulesParser.Get - 33)) | (1 << (FirebaseRulesParser.List - 33)) | (1 << (FirebaseRulesParser.Create - 33)) | (1 << (FirebaseRulesParser.Update - 33)) | (1 << (FirebaseRulesParser.Read - 33)) | (1 << (FirebaseRulesParser.Write - 33)) | (1 << (FirebaseRulesParser.Delete - 33)))) !== 0))) {
+        if(!(((((_la - 34)) & ~0x1f) == 0 && ((1 << (_la - 34)) & ((1 << (FirebaseRulesParser.Get - 34)) | (1 << (FirebaseRulesParser.List - 34)) | (1 << (FirebaseRulesParser.Create - 34)) | (1 << (FirebaseRulesParser.Update - 34)) | (1 << (FirebaseRulesParser.Read - 34)) | (1 << (FirebaseRulesParser.Write - 34)) | (1 << (FirebaseRulesParser.Delete - 34)))) !== 0))) {
         this._errHandler.recoverInline(this);
         }
         else {
@@ -912,14 +873,6 @@ CommentContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitComment(this);
 	}
-};
-
-CommentContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitComment(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -987,14 +940,6 @@ MatcherContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitMatcher(this);
 	}
-};
-
-MatcherContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMatcher(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -1099,14 +1044,6 @@ AllowContext.prototype.exitRule = function(listener) {
 	}
 };
 
-AllowContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitAllow(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1195,14 +1132,6 @@ GetPathVariableContext.prototype.exitRule = function(listener) {
 	}
 };
 
-GetPathVariableContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitGetPathVariable(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1268,14 +1197,6 @@ PathVariableContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitPathVariable(this);
 	}
-};
-
-PathVariableContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitPathVariable(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -1352,14 +1273,6 @@ ArgContext.prototype.exitRule = function(listener) {
 	}
 };
 
-ArgContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArg(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1426,14 +1339,6 @@ ArgumentsContext.prototype.exitRule = function(listener) {
 	}
 };
 
-ArgumentsContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArguments(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1449,7 +1354,7 @@ FirebaseRulesParser.prototype.arguments = function() {
         this.state = 124;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 33)) & ~0x1f) == 0 && ((1 << (_la - 33)) & ((1 << (FirebaseRulesParser.Get - 33)) | (1 << (FirebaseRulesParser.Exists - 33)) | (1 << (FirebaseRulesParser.True - 33)) | (1 << (FirebaseRulesParser.False - 33)) | (1 << (FirebaseRulesParser.Null - 33)) | (1 << (FirebaseRulesParser.Number - 33)) | (1 << (FirebaseRulesParser.String - 33)) | (1 << (FirebaseRulesParser.Identifier - 33)))) !== 0)) {
+        if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 34)) & ~0x1f) == 0 && ((1 << (_la - 34)) & ((1 << (FirebaseRulesParser.Get - 34)) | (1 << (FirebaseRulesParser.Exists - 34)) | (1 << (FirebaseRulesParser.True - 34)) | (1 << (FirebaseRulesParser.False - 34)) | (1 << (FirebaseRulesParser.Null - 34)) | (1 << (FirebaseRulesParser.Number - 34)) | (1 << (FirebaseRulesParser.String - 34)) | (1 << (FirebaseRulesParser.Identifier - 34)))) !== 0)) {
             this.state = 123;
             this.arg();
         }
@@ -1510,14 +1415,6 @@ MemberArgContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitMemberArg(this);
 	}
-};
-
-MemberArgContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMemberArg(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -1586,14 +1483,6 @@ MemberArgumentsContext.prototype.exitRule = function(listener) {
 	}
 };
 
-MemberArgumentsContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMemberArguments(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1609,7 +1498,7 @@ FirebaseRulesParser.prototype.memberArguments = function() {
         this.state = 136;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 33)) & ~0x1f) == 0 && ((1 << (_la - 33)) & ((1 << (FirebaseRulesParser.Get - 33)) | (1 << (FirebaseRulesParser.Exists - 33)) | (1 << (FirebaseRulesParser.True - 33)) | (1 << (FirebaseRulesParser.False - 33)) | (1 << (FirebaseRulesParser.Null - 33)) | (1 << (FirebaseRulesParser.Number - 33)) | (1 << (FirebaseRulesParser.String - 33)) | (1 << (FirebaseRulesParser.Identifier - 33)))) !== 0)) {
+        if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 34)) & ~0x1f) == 0 && ((1 << (_la - 34)) & ((1 << (FirebaseRulesParser.Get - 34)) | (1 << (FirebaseRulesParser.Exists - 34)) | (1 << (FirebaseRulesParser.True - 34)) | (1 << (FirebaseRulesParser.False - 34)) | (1 << (FirebaseRulesParser.Null - 34)) | (1 << (FirebaseRulesParser.Number - 34)) | (1 << (FirebaseRulesParser.String - 34)) | (1 << (FirebaseRulesParser.Identifier - 34)))) !== 0)) {
             this.state = 135;
             this.memberArg();
         }
@@ -1670,14 +1559,6 @@ ArgDeclarationContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitArgDeclaration(this);
 	}
-};
-
-ArgDeclarationContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArgDeclaration(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -1744,14 +1625,6 @@ ArgDeclarationsContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitArgDeclarations(this);
 	}
-};
-
-ArgDeclarationsContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArgDeclarations(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -1864,14 +1737,6 @@ FunctionDeclarationContext.prototype.exitRule = function(listener) {
 	}
 };
 
-FunctionDeclarationContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitFunctionDeclaration(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -1970,14 +1835,6 @@ FieldReferenceWithIdentifierContext.prototype.exitRule = function(listener) {
 	}
 };
 
-FieldReferenceWithIdentifierContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitFieldReferenceWithIdentifier(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function FieldReferenceWithMemberRefContext(parser, ctx) {
 	FieldReferenceContext.call(this, parser);
@@ -2011,14 +1868,6 @@ FieldReferenceWithMemberRefContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitFieldReferenceWithMemberRef(this);
 	}
-};
-
-FieldReferenceWithMemberRefContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitFieldReferenceWithMemberRef(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2164,14 +2013,6 @@ IdContext.prototype.exitRule = function(listener) {
 	}
 };
 
-IdContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitId(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -2186,7 +2027,7 @@ FirebaseRulesParser.prototype.id = function() {
         this.enterOuterAlt(localctx, 1);
         this.state = 176;
         _la = this._input.LA(1);
-        if(!(((((_la - 30)) & ~0x1f) == 0 && ((1 << (_la - 30)) & ((1 << (FirebaseRulesParser.Allow - 30)) | (1 << (FirebaseRulesParser.Match - 30)) | (1 << (FirebaseRulesParser.If - 30)) | (1 << (FirebaseRulesParser.Exists - 30)) | (1 << (FirebaseRulesParser.True - 30)) | (1 << (FirebaseRulesParser.False - 30)) | (1 << (FirebaseRulesParser.List - 30)) | (1 << (FirebaseRulesParser.Create - 30)) | (1 << (FirebaseRulesParser.Update - 30)) | (1 << (FirebaseRulesParser.Read - 30)) | (1 << (FirebaseRulesParser.Write - 30)) | (1 << (FirebaseRulesParser.Delete - 30)) | (1 << (FirebaseRulesParser.Function - 30)) | (1 << (FirebaseRulesParser.Return - 30)) | (1 << (FirebaseRulesParser.Null - 30)) | (1 << (FirebaseRulesParser.Service - 30)) | (1 << (FirebaseRulesParser.Identifier - 30)))) !== 0))) {
+        if(!(((((_la - 31)) & ~0x1f) == 0 && ((1 << (_la - 31)) & ((1 << (FirebaseRulesParser.Allow - 31)) | (1 << (FirebaseRulesParser.Match - 31)) | (1 << (FirebaseRulesParser.If - 31)) | (1 << (FirebaseRulesParser.Exists - 31)) | (1 << (FirebaseRulesParser.True - 31)) | (1 << (FirebaseRulesParser.False - 31)) | (1 << (FirebaseRulesParser.List - 31)) | (1 << (FirebaseRulesParser.Create - 31)) | (1 << (FirebaseRulesParser.Update - 31)) | (1 << (FirebaseRulesParser.Read - 31)) | (1 << (FirebaseRulesParser.Write - 31)) | (1 << (FirebaseRulesParser.Delete - 31)) | (1 << (FirebaseRulesParser.Function - 31)) | (1 << (FirebaseRulesParser.Return - 31)) | (1 << (FirebaseRulesParser.Null - 31)) | (1 << (FirebaseRulesParser.Service - 31)) | (1 << (FirebaseRulesParser.Identifier - 31)))) !== 0))) {
         this._errHandler.recoverInline(this);
         }
         else {
@@ -2282,14 +2123,6 @@ ArrayExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-ArrayExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArrayExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function NumberExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2317,14 +2150,6 @@ NumberExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-NumberExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitNumberExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function ObjectReferenceExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2350,14 +2175,6 @@ ObjectReferenceExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitObjectReferenceExpression(this);
 	}
-};
-
-ObjectReferenceExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitObjectReferenceExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2393,14 +2210,6 @@ ParenthesisExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitParenthesisExpression(this);
 	}
-};
-
-ParenthesisExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitParenthesisExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2461,14 +2270,6 @@ ArithmeticExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-ArithmeticExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitArithmeticExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function MemberReferenceExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2504,14 +2305,6 @@ MemberReferenceExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-MemberReferenceExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMemberReferenceExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function BooleanExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2543,14 +2336,6 @@ BooleanExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-BooleanExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitBooleanExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function FunctionExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2576,14 +2361,6 @@ FunctionExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitFunctionExpression(this);
 	}
-};
-
-FunctionExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitFunctionExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2644,14 +2421,6 @@ CompareExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-CompareExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitCompareExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function BinaryExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2692,14 +2461,6 @@ BinaryExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitBinaryExpression(this);
 	}
-};
-
-BinaryExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitBinaryExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2744,14 +2505,6 @@ LogicalExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-LogicalExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitLogicalExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function GetExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2779,12 +2532,42 @@ GetExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-GetExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitGetExpression(this);
-    } else {
-        return visitor.visitChildren(this);
+
+function InExpressionContext(parser, ctx) {
+	ExpressionContext.call(this, parser);
+    ExpressionContext.prototype.copyFrom.call(this, ctx);
+    return this;
+}
+
+InExpressionContext.prototype = Object.create(ExpressionContext.prototype);
+InExpressionContext.prototype.constructor = InExpressionContext;
+
+FirebaseRulesParser.InExpressionContext = InExpressionContext;
+
+InExpressionContext.prototype.expression = function(i) {
+    if(i===undefined) {
+        i = null;
     }
+    if(i===null) {
+        return this.getTypedRuleContexts(ExpressionContext);
+    } else {
+        return this.getTypedRuleContext(ExpressionContext,i);
+    }
+};
+
+InExpressionContext.prototype.InOperator = function() {
+    return this.getToken(FirebaseRulesParser.InOperator, 0);
+};
+InExpressionContext.prototype.enterRule = function(listener) {
+    if(listener instanceof FirebaseRulesListener ) {
+        listener.enterInExpression(this);
+	}
+};
+
+InExpressionContext.prototype.exitRule = function(listener) {
+    if(listener instanceof FirebaseRulesListener ) {
+        listener.exitInExpression(this);
+	}
 };
 
 
@@ -2814,14 +2597,6 @@ StringExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-StringExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitStringExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function NullExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2847,14 +2622,6 @@ NullExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitNullExpression(this);
 	}
-};
-
-NullExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitNullExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -2903,14 +2670,6 @@ RangeExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-RangeExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitRangeExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 function UnaryExpressionContext(parser, ctx) {
 	ExpressionContext.call(this, parser);
@@ -2944,14 +2703,6 @@ UnaryExpressionContext.prototype.exitRule = function(listener) {
     if(listener instanceof FirebaseRulesListener ) {
         listener.exitUnaryExpression(this);
 	}
-};
-
-UnaryExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitUnaryExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
 };
 
 
@@ -3001,14 +2752,6 @@ MemberFunctionExpressionContext.prototype.exitRule = function(listener) {
 	}
 };
 
-MemberFunctionExpressionContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMemberFunctionExpression(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 FirebaseRulesParser.prototype.expression = function(_p) {
@@ -3046,7 +2789,7 @@ FirebaseRulesParser.prototype.expression = function(_p) {
             this.state = 182;
             this._errHandler.sync(this);
             _la = this._input.LA(1);
-            if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 33)) & ~0x1f) == 0 && ((1 << (_la - 33)) & ((1 << (FirebaseRulesParser.Get - 33)) | (1 << (FirebaseRulesParser.Exists - 33)) | (1 << (FirebaseRulesParser.True - 33)) | (1 << (FirebaseRulesParser.False - 33)) | (1 << (FirebaseRulesParser.Null - 33)) | (1 << (FirebaseRulesParser.Number - 33)) | (1 << (FirebaseRulesParser.String - 33)) | (1 << (FirebaseRulesParser.Identifier - 33)))) !== 0)) {
+            if((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << FirebaseRulesParser.BracketOpen) | (1 << FirebaseRulesParser.SquareBracketOpen) | (1 << FirebaseRulesParser.LogicalNot) | (1 << FirebaseRulesParser.ArithmeticSub))) !== 0) || ((((_la - 34)) & ~0x1f) == 0 && ((1 << (_la - 34)) & ((1 << (FirebaseRulesParser.Get - 34)) | (1 << (FirebaseRulesParser.Exists - 34)) | (1 << (FirebaseRulesParser.True - 34)) | (1 << (FirebaseRulesParser.False - 34)) | (1 << (FirebaseRulesParser.Null - 34)) | (1 << (FirebaseRulesParser.Number - 34)) | (1 << (FirebaseRulesParser.String - 34)) | (1 << (FirebaseRulesParser.Identifier - 34)))) !== 0)) {
                 this.state = 181;
                 this.expression(0);
             }
@@ -3153,7 +2896,7 @@ FirebaseRulesParser.prototype.expression = function(_p) {
 
         }
         this._ctx.stop = this._input.LT(-1);
-        this.state = 239;
+        this.state = 242;
         this._errHandler.sync(this);
         var _alt = this._interp.adaptivePredict(this._input,20,this._ctx)
         while(_alt!=2 && _alt!=antlr4.atn.ATN.INVALID_ALT_NUMBER) {
@@ -3162,7 +2905,7 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                     this.triggerExitRuleEvent();
                 }
                 _prevctx = localctx;
-                this.state = 237;
+                this.state = 240;
                 this._errHandler.sync(this);
                 var la_ = this._interp.adaptivePredict(this._input,19,this._ctx);
                 switch(la_) {
@@ -3170,8 +2913,8 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                     localctx = new CompareExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 206;
-                    if (!( this.precpred(this._ctx, 16))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 16)");
+                    if (!( this.precpred(this._ctx, 17))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 17)");
                     }
                     this.state = 207;
                     _la = this._input.LA(1);
@@ -3183,15 +2926,15 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                         this.consume();
                     }
                     this.state = 208;
-                    this.expression(17);
+                    this.expression(18);
                     break;
 
                 case 2:
                     localctx = new LogicalExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 209;
-                    if (!( this.precpred(this._ctx, 15))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 15)");
+                    if (!( this.precpred(this._ctx, 16))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 16)");
                     }
                     this.state = 210;
                     _la = this._input.LA(1);
@@ -3203,15 +2946,15 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                         this.consume();
                     }
                     this.state = 211;
-                    this.expression(16);
+                    this.expression(17);
                     break;
 
                 case 3:
                     localctx = new BinaryExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 212;
-                    if (!( this.precpred(this._ctx, 14))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 14)");
+                    if (!( this.precpred(this._ctx, 15))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 15)");
                     }
                     this.state = 213;
                     _la = this._input.LA(1);
@@ -3223,15 +2966,15 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                         this.consume();
                     }
                     this.state = 214;
-                    this.expression(15);
+                    this.expression(16);
                     break;
 
                 case 4:
                     localctx = new ArithmeticExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 215;
-                    if (!( this.precpred(this._ctx, 13))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 13)");
+                    if (!( this.precpred(this._ctx, 14))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 14)");
                     }
                     this.state = 216;
                     _la = this._input.LA(1);
@@ -3243,69 +2986,82 @@ FirebaseRulesParser.prototype.expression = function(_p) {
                         this.consume();
                     }
                     this.state = 217;
-                    this.expression(14);
+                    this.expression(15);
                     break;
 
                 case 5:
-                    localctx = new MemberReferenceExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+                    localctx = new InExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 218;
-                    if (!( this.precpred(this._ctx, 12))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 12)");
+                    if (!( this.precpred(this._ctx, 13))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 13)");
                     }
                     this.state = 219;
-                    this.match(FirebaseRulesParser.Dot);
+                    this.match(FirebaseRulesParser.InOperator);
                     this.state = 220;
-                    this.id();
+                    this.expression(14);
                     break;
 
                 case 6:
-                    localctx = new MemberFunctionExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+                    localctx = new MemberReferenceExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
                     this.state = 221;
-                    if (!( this.precpred(this._ctx, 11))) {
-                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 11)");
+                    if (!( this.precpred(this._ctx, 12))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 12)");
                     }
                     this.state = 222;
                     this.match(FirebaseRulesParser.Dot);
                     this.state = 223;
                     this.id();
-                    this.state = 224;
-                    this.match(FirebaseRulesParser.BracketOpen);
-                    this.state = 225;
-                    this.memberArguments();
-                    this.state = 226;
-                    this.match(FirebaseRulesParser.BracketClose);
                     break;
 
                 case 7:
+                    localctx = new MemberFunctionExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+                    this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
+                    this.state = 224;
+                    if (!( this.precpred(this._ctx, 11))) {
+                        throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 11)");
+                    }
+                    this.state = 225;
+                    this.match(FirebaseRulesParser.Dot);
+                    this.state = 226;
+                    this.id();
+                    this.state = 227;
+                    this.match(FirebaseRulesParser.BracketOpen);
+                    this.state = 228;
+                    this.memberArguments();
+                    this.state = 229;
+                    this.match(FirebaseRulesParser.BracketClose);
+                    break;
+
+                case 8:
                     localctx = new RangeExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
                     this.pushNewRecursionContext(localctx, _startState, FirebaseRulesParser.RULE_expression);
-                    this.state = 228;
+                    this.state = 231;
                     if (!( this.precpred(this._ctx, 10))) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 10)");
                     }
-                    this.state = 229;
+                    this.state = 232;
                     this.match(FirebaseRulesParser.SquareBracketOpen);
-                    this.state = 230;
-                    this.expression(0);
                     this.state = 233;
+                    this.expression(0);
+                    this.state = 236;
                     this._errHandler.sync(this);
                     _la = this._input.LA(1);
                     if(_la===FirebaseRulesParser.Colon) {
-                        this.state = 231;
+                        this.state = 234;
                         this.match(FirebaseRulesParser.Colon);
-                        this.state = 232;
+                        this.state = 235;
                         this.expression(0);
                     }
 
-                    this.state = 235;
+                    this.state = 238;
                     this.match(FirebaseRulesParser.SquareBracketClose);
                     break;
 
                 } 
             }
-            this.state = 241;
+            this.state = 244;
             this._errHandler.sync(this);
             _alt = this._interp.adaptivePredict(this._input,20,this._ctx);
         }
@@ -3356,14 +3112,6 @@ ObjectReferenceContext.prototype.exitRule = function(listener) {
 	}
 };
 
-ObjectReferenceContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitObjectReference(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3375,7 +3123,7 @@ FirebaseRulesParser.prototype.objectReference = function() {
     this.enterRule(localctx, 40, FirebaseRulesParser.RULE_objectReference);
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 242;
+        this.state = 245;
         this.match(FirebaseRulesParser.Identifier);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -3431,14 +3179,6 @@ GetPathExpressionVariableContext.prototype.exitRule = function(listener) {
 	}
 };
 
-GetPathExpressionVariableContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitGetPathExpressionVariable(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3450,11 +3190,11 @@ FirebaseRulesParser.prototype.getPathExpressionVariable = function() {
     this.enterRule(localctx, 42, FirebaseRulesParser.RULE_getPathExpressionVariable);
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 244;
+        this.state = 247;
         this.match(FirebaseRulesParser.PathVariableBracket);
-        this.state = 245;
+        this.state = 248;
         this.expression(0);
-        this.state = 246;
+        this.state = 249;
         this.match(FirebaseRulesParser.BracketClose);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -3532,14 +3272,6 @@ GetPathContext.prototype.exitRule = function(listener) {
 	}
 };
 
-GetPathContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitGetPath(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3552,27 +3284,27 @@ FirebaseRulesParser.prototype.getPath = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 253; 
+        this.state = 256; 
         this._errHandler.sync(this);
         _la = this._input.LA(1);
         do {
-            this.state = 248;
-            this.match(FirebaseRulesParser.Slash);
             this.state = 251;
+            this.match(FirebaseRulesParser.Slash);
+            this.state = 254;
             this._errHandler.sync(this);
             switch(this._input.LA(1)) {
             case FirebaseRulesParser.Identifier:
-                this.state = 249;
+                this.state = 252;
                 this.getPathVariable();
                 break;
             case FirebaseRulesParser.PathVariableBracket:
-                this.state = 250;
+                this.state = 253;
                 this.getPathExpressionVariable();
                 break;
             default:
                 throw new antlr4.error.NoViableAltException(this);
             }
-            this.state = 255; 
+            this.state = 258; 
             this._errHandler.sync(this);
             _la = this._input.LA(1);
         } while(_la===FirebaseRulesParser.Slash);
@@ -3638,14 +3370,6 @@ RuleFunctionCallContext.prototype.exitRule = function(listener) {
 	}
 };
 
-RuleFunctionCallContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitRuleFunctionCall(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3658,7 +3382,7 @@ FirebaseRulesParser.prototype.ruleFunctionCall = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 257;
+        this.state = 260;
         _la = this._input.LA(1);
         if(!(_la===FirebaseRulesParser.Get || _la===FirebaseRulesParser.Exists)) {
         this._errHandler.recoverInline(this);
@@ -3667,11 +3391,11 @@ FirebaseRulesParser.prototype.ruleFunctionCall = function() {
         	this._errHandler.reportMatch(this);
             this.consume();
         }
-        this.state = 258;
+        this.state = 261;
         this.match(FirebaseRulesParser.BracketOpen);
-        this.state = 259;
+        this.state = 262;
         this.getPath();
-        this.state = 260;
+        this.state = 263;
         this.match(FirebaseRulesParser.BracketClose);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -3731,14 +3455,6 @@ FunctionCallContext.prototype.exitRule = function(listener) {
 	}
 };
 
-FunctionCallContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitFunctionCall(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3750,13 +3466,13 @@ FirebaseRulesParser.prototype.functionCall = function() {
     this.enterRule(localctx, 48, FirebaseRulesParser.RULE_functionCall);
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 262;
-        this.match(FirebaseRulesParser.Identifier);
-        this.state = 263;
-        this.match(FirebaseRulesParser.BracketOpen);
-        this.state = 264;
-        this.arguments();
         this.state = 265;
+        this.match(FirebaseRulesParser.Identifier);
+        this.state = 266;
+        this.match(FirebaseRulesParser.BracketOpen);
+        this.state = 267;
+        this.arguments();
+        this.state = 268;
         this.match(FirebaseRulesParser.BracketClose);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -3835,14 +3551,6 @@ MatchPathContext.prototype.exitRule = function(listener) {
 	}
 };
 
-MatchPathContext.prototype.accept = function(visitor) {
-    if ( visitor instanceof FirebaseRulesVisitor ) {
-        return visitor.visitMatchPath(this);
-    } else {
-        return visitor.visitChildren(this);
-    }
-};
-
 
 
 
@@ -3855,27 +3563,27 @@ FirebaseRulesParser.prototype.matchPath = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 272; 
+        this.state = 275; 
         this._errHandler.sync(this);
         _la = this._input.LA(1);
         do {
-            this.state = 267;
-            this.match(FirebaseRulesParser.Slash);
             this.state = 270;
+            this.match(FirebaseRulesParser.Slash);
+            this.state = 273;
             this._errHandler.sync(this);
             switch(this._input.LA(1)) {
             case FirebaseRulesParser.Identifier:
-                this.state = 268;
+                this.state = 271;
                 this.match(FirebaseRulesParser.Identifier);
                 break;
             case FirebaseRulesParser.CurlyOpen:
-                this.state = 269;
+                this.state = 272;
                 this.pathVariable();
                 break;
             default:
                 throw new antlr4.error.NoViableAltException(this);
             }
-            this.state = 274; 
+            this.state = 277; 
             this._errHandler.sync(this);
             _la = this._input.LA(1);
         } while(_la===FirebaseRulesParser.Slash);
@@ -3906,18 +3614,20 @@ FirebaseRulesParser.prototype.sempred = function(localctx, ruleIndex, predIndex)
 FirebaseRulesParser.prototype.expression_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 0:
-			return this.precpred(this._ctx, 16);
+			return this.precpred(this._ctx, 17);
 		case 1:
-			return this.precpred(this._ctx, 15);
+			return this.precpred(this._ctx, 16);
 		case 2:
-			return this.precpred(this._ctx, 14);
+			return this.precpred(this._ctx, 15);
 		case 3:
-			return this.precpred(this._ctx, 13);
+			return this.precpred(this._ctx, 14);
 		case 4:
-			return this.precpred(this._ctx, 12);
+			return this.precpred(this._ctx, 13);
 		case 5:
-			return this.precpred(this._ctx, 11);
+			return this.precpred(this._ctx, 12);
 		case 6:
+			return this.precpred(this._ctx, 11);
+		case 7:
 			return this.precpred(this._ctx, 10);
 		default:
 			throw "No predicate with index:" + predIndex;
@@ -4006,6 +3716,8 @@ exports.LogicalExpressionContext = LogicalExpressionContext;
 FirebaseRulesParser.LogicalExpressionContext = LogicalExpressionContext;
 exports.GetExpressionContext = GetExpressionContext;
 FirebaseRulesParser.GetExpressionContext = GetExpressionContext;
+exports.InExpressionContext = InExpressionContext;
+FirebaseRulesParser.InExpressionContext = InExpressionContext;
 exports.StringExpressionContext = StringExpressionContext;
 FirebaseRulesParser.StringExpressionContext = StringExpressionContext;
 exports.NullExpressionContext = NullExpressionContext;

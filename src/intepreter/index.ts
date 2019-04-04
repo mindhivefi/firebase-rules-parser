@@ -22,6 +22,7 @@ import {
   FunctionDeclarationContext,
   GetPathExpressionVariableContext,
   GetPathVariableContext,
+  InExpressionContext,
   LogicalExpressionContext,
   MatcherContext,
   MemberFunctionExpressionContext,
@@ -472,6 +473,10 @@ class FirebaseRulesIntepreter extends FirebaseRulesListener {
 
   public exitCompareExpression = (ctx: CompareExpressionContext) => {
     this.handleBinaryOperation(StackItemType.COMPARE, ctx);
+  }
+
+  public exitInExpression = (ctx: InExpressionContext) => {
+    this.handleBinaryOperation(StackItemType.ARITHMETIC, ctx);
   }
 
   public exitArithmeticExpression = (ctx: ArithmeticExpressionContext) => {
@@ -1020,6 +1025,23 @@ class FirebaseRulesIntepreter extends FirebaseRulesListener {
           return leftValue < rightValue;
         case '<=':
           return leftValue <= rightValue;
+
+        case 'in': {
+          if (Array.isArray(rightValue)) {
+            // List in operator => check if an array has a value
+            return rightValue.includes(leftValue);
+          }
+          if (typeof rightValue === 'object') {
+            // Map in operator => check if the object has a key
+            return rightValue.hasOwnProperty(leftValue);
+          }
+
+          throwError(
+            'In operatation must have a list or and map as target, but found type of ' + typeof rightValue,
+            ctx
+          );
+          return false;
+        }
         case '==':
           if (Array.isArray(leftValue)) {
             if (Array.isArray(rightValue)) {

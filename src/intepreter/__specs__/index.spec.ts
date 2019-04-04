@@ -238,6 +238,22 @@ describe('Firebase Rules', () => {
       });
     });
 
+    it('will support a map in operator', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if 'auth' in request;
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
+      expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
+        read: true,
+      });
+    });
+
     // it('will give a null value error if object member do not exists', () => {
     //   const ruleFile = `service cloud.firestore {
     //     match /databases/{database}/documents {
@@ -287,6 +303,22 @@ describe('Firebase Rules', () => {
       rules.resource.data = {
         list: [1, 2],
       };
+      expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
+        read: true,
+      });
+    });
+
+    it('will support a list in operator', () => {
+      const ruleFile = `service cloud.firestore {
+        match /databases/{database}/documents {
+          match /organizations/{doc} {
+            allow read: if 2 in [1, 2];
+          }
+        }
+      }`;
+      const path = '/databases/DEFAULT/documents/organizations/mindhive';
+
+      const rules = new RulesParser().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });

@@ -21,10 +21,10 @@ public class FirebaseRulesParser extends Parser {
 		Colon=11, Comma=12, Semicolon=13, LessThan=14, LessOrEqual=15, GreaterOrEqual=16, 
 		GreaterThan=17, Equals=18, Unequal=19, LogicalAnd=20, LogicalOr=21, LogicalNot=22, 
 		BinaryAnd=23, BinaryOr=24, ArithmeticAdd=25, ArithmeticSub=26, ArithmeticMul=27, 
-		ArithmeticExp=28, ArithmeticModus=29, Allow=30, Match=31, If=32, Get=33, 
-		Exists=34, True=35, False=36, List=37, Create=38, Update=39, Read=40, 
-		Write=41, Delete=42, Function=43, Return=44, Null=45, Service=46, Number=47, 
-		String=48, Identifier=49, Slash=50, WS=51, Comment=52;
+		ArithmeticExp=28, ArithmeticModus=29, InOperator=30, Allow=31, Match=32, 
+		If=33, Get=34, Exists=35, True=36, False=37, List=38, Create=39, Update=40, 
+		Read=41, Write=42, Delete=43, Function=44, Return=45, Null=46, Service=47, 
+		Number=48, String=49, Identifier=50, Slash=51, WS=52, Comment=53;
 	public static final int
 		RULE_service = 0, RULE_namespaceIdentifier = 1, RULE_namespaceBlock = 2, 
 		RULE_matchBlock = 3, RULE_allowKey = 4, RULE_comment = 5, RULE_matcher = 6, 
@@ -47,7 +47,7 @@ public class FirebaseRulesParser extends Parser {
 		null, "'='", "'**'", "'{'", "'}'", "'('", "')'", "'$('", "'['", "']'", 
 		"'.'", "':'", "','", "';'", "'<'", "'<='", "'>='", "'>'", "'=='", "'!='", 
 		"'&&'", "'||'", "'!'", "'&'", "'|'", "'+'", "'-'", "'*'", "'^'", "'%'", 
-		"'allow'", "'match'", "'if'", "'get'", "'exists'", "'true'", "'false'", 
+		"'in'", "'allow'", "'match'", "'if'", "'get'", "'exists'", "'true'", "'false'", 
 		"'list'", "'create'", "'update'", "'read'", "'write'", "'delete'", "'function'", 
 		"'return'", "'null'", "'service'", null, null, null, "'/'"
 	};
@@ -57,10 +57,10 @@ public class FirebaseRulesParser extends Parser {
 		"Colon", "Comma", "Semicolon", "LessThan", "LessOrEqual", "GreaterOrEqual", 
 		"GreaterThan", "Equals", "Unequal", "LogicalAnd", "LogicalOr", "LogicalNot", 
 		"BinaryAnd", "BinaryOr", "ArithmeticAdd", "ArithmeticSub", "ArithmeticMul", 
-		"ArithmeticExp", "ArithmeticModus", "Allow", "Match", "If", "Get", "Exists", 
-		"True", "False", "List", "Create", "Update", "Read", "Write", "Delete", 
-		"Function", "Return", "Null", "Service", "Number", "String", "Identifier", 
-		"Slash", "WS", "Comment"
+		"ArithmeticExp", "ArithmeticModus", "InOperator", "Allow", "Match", "If", 
+		"Get", "Exists", "True", "False", "List", "Create", "Update", "Read", 
+		"Write", "Delete", "Function", "Return", "Null", "Service", "Number", 
+		"String", "Identifier", "Slash", "WS", "Comment"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -1227,6 +1227,16 @@ public class FirebaseRulesParser extends Parser {
 		}
 		public GetExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
 	}
+	public static class InExpressionContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode InOperator() { return getToken(FirebaseRulesParser.InOperator, 0); }
+		public InExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+	}
 	public static class StringExpressionContext extends ExpressionContext {
 		public TerminalNode String() { return getToken(FirebaseRulesParser.String, 0); }
 		public StringExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
@@ -1433,7 +1443,7 @@ public class FirebaseRulesParser extends Parser {
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(239);
+			setState(242);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,20,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
@@ -1441,7 +1451,7 @@ public class FirebaseRulesParser extends Parser {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(237);
+					setState(240);
 					_errHandler.sync(this);
 					switch ( getInterpreter().adaptivePredict(_input,19,_ctx) ) {
 					case 1:
@@ -1449,7 +1459,7 @@ public class FirebaseRulesParser extends Parser {
 						_localctx = new CompareExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(206);
-						if (!(precpred(_ctx, 16))) throw new FailedPredicateException(this, "precpred(_ctx, 16)");
+						if (!(precpred(_ctx, 17))) throw new FailedPredicateException(this, "precpred(_ctx, 17)");
 						setState(207);
 						_la = _input.LA(1);
 						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LessThan) | (1L << LessOrEqual) | (1L << GreaterOrEqual) | (1L << GreaterThan) | (1L << Equals) | (1L << Unequal))) != 0)) ) {
@@ -1461,7 +1471,7 @@ public class FirebaseRulesParser extends Parser {
 							consume();
 						}
 						setState(208);
-						expression(17);
+						expression(18);
 						}
 						break;
 					case 2:
@@ -1469,7 +1479,7 @@ public class FirebaseRulesParser extends Parser {
 						_localctx = new LogicalExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(209);
-						if (!(precpred(_ctx, 15))) throw new FailedPredicateException(this, "precpred(_ctx, 15)");
+						if (!(precpred(_ctx, 16))) throw new FailedPredicateException(this, "precpred(_ctx, 16)");
 						setState(210);
 						_la = _input.LA(1);
 						if ( !(_la==LogicalAnd || _la==LogicalOr) ) {
@@ -1481,7 +1491,7 @@ public class FirebaseRulesParser extends Parser {
 							consume();
 						}
 						setState(211);
-						expression(16);
+						expression(17);
 						}
 						break;
 					case 3:
@@ -1489,7 +1499,7 @@ public class FirebaseRulesParser extends Parser {
 						_localctx = new BinaryExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(212);
-						if (!(precpred(_ctx, 14))) throw new FailedPredicateException(this, "precpred(_ctx, 14)");
+						if (!(precpred(_ctx, 15))) throw new FailedPredicateException(this, "precpred(_ctx, 15)");
 						setState(213);
 						_la = _input.LA(1);
 						if ( !(_la==BinaryAnd || _la==BinaryOr) ) {
@@ -1501,7 +1511,7 @@ public class FirebaseRulesParser extends Parser {
 							consume();
 						}
 						setState(214);
-						expression(15);
+						expression(16);
 						}
 						break;
 					case 4:
@@ -1509,7 +1519,7 @@ public class FirebaseRulesParser extends Parser {
 						_localctx = new ArithmeticExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(215);
-						if (!(precpred(_ctx, 13))) throw new FailedPredicateException(this, "precpred(_ctx, 13)");
+						if (!(precpred(_ctx, 14))) throw new FailedPredicateException(this, "precpred(_ctx, 14)");
 						setState(216);
 						_la = _input.LA(1);
 						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ArithmeticAdd) | (1L << ArithmeticSub) | (1L << ArithmeticMul) | (1L << ArithmeticExp) | (1L << ArithmeticModus) | (1L << Slash))) != 0)) ) {
@@ -1521,69 +1531,81 @@ public class FirebaseRulesParser extends Parser {
 							consume();
 						}
 						setState(217);
-						expression(14);
+						expression(15);
 						}
 						break;
 					case 5:
 						{
-						_localctx = new MemberReferenceExpressionContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new InExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(218);
-						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
+						if (!(precpred(_ctx, 13))) throw new FailedPredicateException(this, "precpred(_ctx, 13)");
 						setState(219);
-						match(Dot);
+						match(InOperator);
 						setState(220);
-						id();
+						expression(14);
 						}
 						break;
 					case 6:
 						{
-						_localctx = new MemberFunctionExpressionContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new MemberReferenceExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(221);
-						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
+						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
 						setState(222);
 						match(Dot);
 						setState(223);
 						id();
-						setState(224);
-						match(BracketOpen);
-						setState(225);
-						memberArguments();
-						setState(226);
-						match(BracketClose);
 						}
 						break;
 					case 7:
 						{
+						_localctx = new MemberFunctionExpressionContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(224);
+						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
+						setState(225);
+						match(Dot);
+						setState(226);
+						id();
+						setState(227);
+						match(BracketOpen);
+						setState(228);
+						memberArguments();
+						setState(229);
+						match(BracketClose);
+						}
+						break;
+					case 8:
+						{
 						_localctx = new RangeExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(228);
+						setState(231);
 						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
-						setState(229);
+						setState(232);
 						match(SquareBracketOpen);
-						setState(230);
-						expression(0);
 						setState(233);
+						expression(0);
+						setState(236);
 						_errHandler.sync(this);
 						_la = _input.LA(1);
 						if (_la==Colon) {
 							{
-							setState(231);
+							setState(234);
 							match(Colon);
-							setState(232);
+							setState(235);
 							expression(0);
 							}
 						}
 
-						setState(235);
+						setState(238);
 						match(SquareBracketClose);
 						}
 						break;
 					}
 					} 
 				}
-				setState(241);
+				setState(244);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,20,_ctx);
 			}
@@ -1614,7 +1636,7 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(242);
+			setState(245);
 			match(Identifier);
 			}
 		}
@@ -1647,11 +1669,11 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(244);
+			setState(247);
 			match(PathVariableBracket);
-			setState(245);
+			setState(248);
 			expression(0);
-			setState(246);
+			setState(249);
 			match(BracketClose);
 			}
 		}
@@ -1696,26 +1718,26 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(253); 
+			setState(256); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(248);
-				match(Slash);
 				setState(251);
+				match(Slash);
+				setState(254);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
 				case Identifier:
 					{
-					setState(249);
+					setState(252);
 					getPathVariable();
 					}
 					break;
 				case PathVariableBracket:
 					{
-					setState(250);
+					setState(253);
 					getPathExpressionVariable();
 					}
 					break;
@@ -1724,7 +1746,7 @@ public class FirebaseRulesParser extends Parser {
 				}
 				}
 				}
-				setState(255); 
+				setState(258); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( _la==Slash );
@@ -1762,7 +1784,7 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(257);
+			setState(260);
 			_la = _input.LA(1);
 			if ( !(_la==Get || _la==Exists) ) {
 			_errHandler.recoverInline(this);
@@ -1772,11 +1794,11 @@ public class FirebaseRulesParser extends Parser {
 				_errHandler.reportMatch(this);
 				consume();
 			}
-			setState(258);
+			setState(261);
 			match(BracketOpen);
-			setState(259);
+			setState(262);
 			getPath();
-			setState(260);
+			setState(263);
 			match(BracketClose);
 			}
 		}
@@ -1810,13 +1832,13 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(262);
-			match(Identifier);
-			setState(263);
-			match(BracketOpen);
-			setState(264);
-			arguments();
 			setState(265);
+			match(Identifier);
+			setState(266);
+			match(BracketOpen);
+			setState(267);
+			arguments();
+			setState(268);
 			match(BracketClose);
 			}
 		}
@@ -1859,26 +1881,26 @@ public class FirebaseRulesParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(272); 
+			setState(275); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(267);
-				match(Slash);
 				setState(270);
+				match(Slash);
+				setState(273);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
 				case Identifier:
 					{
-					setState(268);
+					setState(271);
 					match(Identifier);
 					}
 					break;
 				case CurlyOpen:
 					{
-					setState(269);
+					setState(272);
 					pathVariable();
 					}
 					break;
@@ -1887,7 +1909,7 @@ public class FirebaseRulesParser extends Parser {
 				}
 				}
 				}
-				setState(274); 
+				setState(277); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( _la==Slash );
@@ -1914,25 +1936,27 @@ public class FirebaseRulesParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 16);
+			return precpred(_ctx, 17);
 		case 1:
-			return precpred(_ctx, 15);
+			return precpred(_ctx, 16);
 		case 2:
-			return precpred(_ctx, 14);
+			return precpred(_ctx, 15);
 		case 3:
-			return precpred(_ctx, 13);
+			return precpred(_ctx, 14);
 		case 4:
-			return precpred(_ctx, 12);
+			return precpred(_ctx, 13);
 		case 5:
-			return precpred(_ctx, 11);
+			return precpred(_ctx, 12);
 		case 6:
+			return precpred(_ctx, 11);
+		case 7:
 			return precpred(_ctx, 10);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\66\u0117\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\67\u011a\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -1949,84 +1973,85 @@ public class FirebaseRulesParser extends Parser {
 		"\25\3\25\7\25\u00bd\n\25\f\25\16\25\u00c0\13\25\3\25\3\25\3\25\3\25\3"+
 		"\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u00cf\n\25\3\25\3\25"+
 		"\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25"+
-		"\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u00ec\n\25"+
-		"\3\25\3\25\7\25\u00f0\n\25\f\25\16\25\u00f3\13\25\3\26\3\26\3\27\3\27"+
-		"\3\27\3\27\3\30\3\30\3\30\5\30\u00fe\n\30\6\30\u0100\n\30\r\30\16\30\u0101"+
-		"\3\31\3\31\3\31\3\31\3\31\3\32\3\32\3\32\3\32\3\32\3\33\3\33\3\33\5\33"+
-		"\u0111\n\33\6\33\u0113\n\33\r\33\16\33\u0114\3\33\2\3(\34\2\4\6\b\n\f"+
-		"\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\2\13\4\2##\',\5\2 \"$\60"+
-		"\63\63\4\2\30\30\34\34\3\2%&\3\2\20\25\3\2\26\27\3\2\31\32\4\2\33\37\64"+
-		"\64\3\2#$\2\u0125\2\66\3\2\2\2\4:\3\2\2\2\6B\3\2\2\2\bM\3\2\2\2\nY\3\2"+
-		"\2\2\f[\3\2\2\2\16]\3\2\2\2\20a\3\2\2\2\22q\3\2\2\2\24s\3\2\2\2\26{\3"+
-		"\2\2\2\30~\3\2\2\2\32\u0087\3\2\2\2\34\u008a\3\2\2\2\36\u0093\3\2\2\2"+
-		" \u0096\3\2\2\2\"\u009f\3\2\2\2$\u00b0\3\2\2\2&\u00b2\3\2\2\2(\u00ce\3"+
-		"\2\2\2*\u00f4\3\2\2\2,\u00f6\3\2\2\2.\u00ff\3\2\2\2\60\u0103\3\2\2\2\62"+
-		"\u0108\3\2\2\2\64\u0112\3\2\2\2\66\67\7\60\2\2\678\5\4\3\289\5\6\4\29"+
-		"\3\3\2\2\2:?\5&\24\2;<\7\f\2\2<>\5&\24\2=;\3\2\2\2>A\3\2\2\2?=\3\2\2\2"+
-		"?@\3\2\2\2@\5\3\2\2\2A?\3\2\2\2BH\7\5\2\2CG\5\16\b\2DG\5\f\7\2EG\5\"\22"+
-		"\2FC\3\2\2\2FD\3\2\2\2FE\3\2\2\2GJ\3\2\2\2HF\3\2\2\2HI\3\2\2\2IK\3\2\2"+
-		"\2JH\3\2\2\2KL\7\6\2\2L\7\3\2\2\2MT\7\5\2\2NS\5\20\t\2OS\5\16\b\2PS\7"+
-		"\66\2\2QS\5\"\22\2RN\3\2\2\2RO\3\2\2\2RP\3\2\2\2RQ\3\2\2\2SV\3\2\2\2T"+
-		"R\3\2\2\2TU\3\2\2\2UW\3\2\2\2VT\3\2\2\2WX\7\6\2\2X\t\3\2\2\2YZ\t\2\2\2"+
-		"Z\13\3\2\2\2[\\\7\66\2\2\\\r\3\2\2\2]^\7!\2\2^_\5\64\33\2_`\5\b\5\2`\17"+
-		"\3\2\2\2ab\7 \2\2bg\5\n\6\2cd\7\16\2\2df\5\n\6\2ec\3\2\2\2fi\3\2\2\2g"+
-		"e\3\2\2\2gh\3\2\2\2hm\3\2\2\2ig\3\2\2\2jk\7\r\2\2kl\7\"\2\2ln\5(\25\2"+
-		"mj\3\2\2\2mn\3\2\2\2no\3\2\2\2op\7\17\2\2p\21\3\2\2\2qr\7\63\2\2r\23\3"+
-		"\2\2\2st\7\5\2\2tw\7\63\2\2uv\7\3\2\2vx\7\4\2\2wu\3\2\2\2wx\3\2\2\2xy"+
-		"\3\2\2\2yz\7\6\2\2z\25\3\2\2\2{|\5(\25\2|\27\3\2\2\2}\177\5\26\f\2~}\3"+
-		"\2\2\2~\177\3\2\2\2\177\u0084\3\2\2\2\u0080\u0081\7\16\2\2\u0081\u0083"+
-		"\5\26\f\2\u0082\u0080\3\2\2\2\u0083\u0086\3\2\2\2\u0084\u0082\3\2\2\2"+
-		"\u0084\u0085\3\2\2\2\u0085\31\3\2\2\2\u0086\u0084\3\2\2\2\u0087\u0088"+
-		"\5(\25\2\u0088\33\3\2\2\2\u0089\u008b\5\32\16\2\u008a\u0089\3\2\2\2\u008a"+
-		"\u008b\3\2\2\2\u008b\u0090\3\2\2\2\u008c\u008d\7\16\2\2\u008d\u008f\5"+
-		"\32\16\2\u008e\u008c\3\2\2\2\u008f\u0092\3\2\2\2\u0090\u008e\3\2\2\2\u0090"+
-		"\u0091\3\2\2\2\u0091\35\3\2\2\2\u0092\u0090\3\2\2\2\u0093\u0094\7\63\2"+
-		"\2\u0094\37\3\2\2\2\u0095\u0097\5\36\20\2\u0096\u0095\3\2\2\2\u0096\u0097"+
-		"\3\2\2\2\u0097\u009c\3\2\2\2\u0098\u0099\7\16\2\2\u0099\u009b\5\36\20"+
-		"\2\u009a\u0098\3\2\2\2\u009b\u009e\3\2\2\2\u009c\u009a\3\2\2\2\u009c\u009d"+
-		"\3\2\2\2\u009d!\3\2\2\2\u009e\u009c\3\2\2\2\u009f\u00a0\7-\2\2\u00a0\u00a1"+
-		"\7\63\2\2\u00a1\u00a2\7\7\2\2\u00a2\u00a3\5 \21\2\u00a3\u00a4\7\b\2\2"+
-		"\u00a4\u00a5\7\5\2\2\u00a5\u00a6\7.\2\2\u00a6\u00a7\5(\25\2\u00a7\u00a8"+
-		"\7\17\2\2\u00a8\u00a9\7\6\2\2\u00a9#\3\2\2\2\u00aa\u00ab\7\f\2\2\u00ab"+
-		"\u00b1\5&\24\2\u00ac\u00ad\7\n\2\2\u00ad\u00ae\5(\25\2\u00ae\u00af\7\13"+
-		"\2\2\u00af\u00b1\3\2\2\2\u00b0\u00aa\3\2\2\2\u00b0\u00ac\3\2\2\2\u00b1"+
-		"%\3\2\2\2\u00b2\u00b3\t\3\2\2\u00b3\'\3\2\2\2\u00b4\u00b5\b\25\1\2\u00b5"+
-		"\u00cf\7/\2\2\u00b6\u00b8\7\n\2\2\u00b7\u00b9\5(\25\2\u00b8\u00b7\3\2"+
-		"\2\2\u00b8\u00b9\3\2\2\2\u00b9\u00be\3\2\2\2\u00ba\u00bb\7\16\2\2\u00bb"+
-		"\u00bd\5(\25\2\u00bc\u00ba\3\2\2\2\u00bd\u00c0\3\2\2\2\u00be\u00bc\3\2"+
-		"\2\2\u00be\u00bf\3\2\2\2\u00bf\u00c1\3\2\2\2\u00c0\u00be\3\2\2\2\u00c1"+
-		"\u00cf\7\13\2\2\u00c2\u00c3\t\4\2\2\u00c3\u00cf\5(\25\n\u00c4\u00cf\7"+
-		"\62\2\2\u00c5\u00cf\7\61\2\2\u00c6\u00cf\t\5\2\2\u00c7\u00cf\7\63\2\2"+
-		"\u00c8\u00cf\5\60\31\2\u00c9\u00cf\5\62\32\2\u00ca\u00cb\7\7\2\2\u00cb"+
-		"\u00cc\5(\25\2\u00cc\u00cd\7\b\2\2\u00cd\u00cf\3\2\2\2\u00ce\u00b4\3\2"+
-		"\2\2\u00ce\u00b6\3\2\2\2\u00ce\u00c2\3\2\2\2\u00ce\u00c4\3\2\2\2\u00ce"+
-		"\u00c5\3\2\2\2\u00ce\u00c6\3\2\2\2\u00ce\u00c7\3\2\2\2\u00ce\u00c8\3\2"+
-		"\2\2\u00ce\u00c9\3\2\2\2\u00ce\u00ca\3\2\2\2\u00cf\u00f1\3\2\2\2\u00d0"+
-		"\u00d1\f\22\2\2\u00d1\u00d2\t\6\2\2\u00d2\u00f0\5(\25\23\u00d3\u00d4\f"+
-		"\21\2\2\u00d4\u00d5\t\7\2\2\u00d5\u00f0\5(\25\22\u00d6\u00d7\f\20\2\2"+
-		"\u00d7\u00d8\t\b\2\2\u00d8\u00f0\5(\25\21\u00d9\u00da\f\17\2\2\u00da\u00db"+
-		"\t\t\2\2\u00db\u00f0\5(\25\20\u00dc\u00dd\f\16\2\2\u00dd\u00de\7\f\2\2"+
-		"\u00de\u00f0\5&\24\2\u00df\u00e0\f\r\2\2\u00e0\u00e1\7\f\2\2\u00e1\u00e2"+
-		"\5&\24\2\u00e2\u00e3\7\7\2\2\u00e3\u00e4\5\34\17\2\u00e4\u00e5\7\b\2\2"+
-		"\u00e5\u00f0\3\2\2\2\u00e6\u00e7\f\f\2\2\u00e7\u00e8\7\n\2\2\u00e8\u00eb"+
-		"\5(\25\2\u00e9\u00ea\7\r\2\2\u00ea\u00ec\5(\25\2\u00eb\u00e9\3\2\2\2\u00eb"+
-		"\u00ec\3\2\2\2\u00ec\u00ed\3\2\2\2\u00ed\u00ee\7\13\2\2\u00ee\u00f0\3"+
-		"\2\2\2\u00ef\u00d0\3\2\2\2\u00ef\u00d3\3\2\2\2\u00ef\u00d6\3\2\2\2\u00ef"+
-		"\u00d9\3\2\2\2\u00ef\u00dc\3\2\2\2\u00ef\u00df\3\2\2\2\u00ef\u00e6\3\2"+
-		"\2\2\u00f0\u00f3\3\2\2\2\u00f1\u00ef\3\2\2\2\u00f1\u00f2\3\2\2\2\u00f2"+
-		")\3\2\2\2\u00f3\u00f1\3\2\2\2\u00f4\u00f5\7\63\2\2\u00f5+\3\2\2\2\u00f6"+
-		"\u00f7\7\t\2\2\u00f7\u00f8\5(\25\2\u00f8\u00f9\7\b\2\2\u00f9-\3\2\2\2"+
-		"\u00fa\u00fd\7\64\2\2\u00fb\u00fe\5\22\n\2\u00fc\u00fe\5,\27\2\u00fd\u00fb"+
-		"\3\2\2\2\u00fd\u00fc\3\2\2\2\u00fe\u0100\3\2\2\2\u00ff\u00fa\3\2\2\2\u0100"+
-		"\u0101\3\2\2\2\u0101\u00ff\3\2\2\2\u0101\u0102\3\2\2\2\u0102/\3\2\2\2"+
-		"\u0103\u0104\t\n\2\2\u0104\u0105\7\7\2\2\u0105\u0106\5.\30\2\u0106\u0107"+
-		"\7\b\2\2\u0107\61\3\2\2\2\u0108\u0109\7\63\2\2\u0109\u010a\7\7\2\2\u010a"+
-		"\u010b\5\30\r\2\u010b\u010c\7\b\2\2\u010c\63\3\2\2\2\u010d\u0110\7\64"+
-		"\2\2\u010e\u0111\7\63\2\2\u010f\u0111\5\24\13\2\u0110\u010e\3\2\2\2\u0110"+
-		"\u010f\3\2\2\2\u0111\u0113\3\2\2\2\u0112\u010d\3\2\2\2\u0113\u0114\3\2"+
-		"\2\2\u0114\u0112\3\2\2\2\u0114\u0115\3\2\2\2\u0115\65\3\2\2\2\33?FHRT"+
-		"gmw~\u0084\u008a\u0090\u0096\u009c\u00b0\u00b8\u00be\u00ce\u00eb\u00ef"+
-		"\u00f1\u00fd\u0101\u0110\u0114";
+		"\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25"+
+		"\5\25\u00ef\n\25\3\25\3\25\7\25\u00f3\n\25\f\25\16\25\u00f6\13\25\3\26"+
+		"\3\26\3\27\3\27\3\27\3\27\3\30\3\30\3\30\5\30\u0101\n\30\6\30\u0103\n"+
+		"\30\r\30\16\30\u0104\3\31\3\31\3\31\3\31\3\31\3\32\3\32\3\32\3\32\3\32"+
+		"\3\33\3\33\3\33\5\33\u0114\n\33\6\33\u0116\n\33\r\33\16\33\u0117\3\33"+
+		"\2\3(\34\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\2\13"+
+		"\4\2$$(-\5\2!#%\61\64\64\4\2\30\30\34\34\3\2&\'\3\2\20\25\3\2\26\27\3"+
+		"\2\31\32\4\2\33\37\65\65\3\2$%\2\u0129\2\66\3\2\2\2\4:\3\2\2\2\6B\3\2"+
+		"\2\2\bM\3\2\2\2\nY\3\2\2\2\f[\3\2\2\2\16]\3\2\2\2\20a\3\2\2\2\22q\3\2"+
+		"\2\2\24s\3\2\2\2\26{\3\2\2\2\30~\3\2\2\2\32\u0087\3\2\2\2\34\u008a\3\2"+
+		"\2\2\36\u0093\3\2\2\2 \u0096\3\2\2\2\"\u009f\3\2\2\2$\u00b0\3\2\2\2&\u00b2"+
+		"\3\2\2\2(\u00ce\3\2\2\2*\u00f7\3\2\2\2,\u00f9\3\2\2\2.\u0102\3\2\2\2\60"+
+		"\u0106\3\2\2\2\62\u010b\3\2\2\2\64\u0115\3\2\2\2\66\67\7\61\2\2\678\5"+
+		"\4\3\289\5\6\4\29\3\3\2\2\2:?\5&\24\2;<\7\f\2\2<>\5&\24\2=;\3\2\2\2>A"+
+		"\3\2\2\2?=\3\2\2\2?@\3\2\2\2@\5\3\2\2\2A?\3\2\2\2BH\7\5\2\2CG\5\16\b\2"+
+		"DG\5\f\7\2EG\5\"\22\2FC\3\2\2\2FD\3\2\2\2FE\3\2\2\2GJ\3\2\2\2HF\3\2\2"+
+		"\2HI\3\2\2\2IK\3\2\2\2JH\3\2\2\2KL\7\6\2\2L\7\3\2\2\2MT\7\5\2\2NS\5\20"+
+		"\t\2OS\5\16\b\2PS\7\67\2\2QS\5\"\22\2RN\3\2\2\2RO\3\2\2\2RP\3\2\2\2RQ"+
+		"\3\2\2\2SV\3\2\2\2TR\3\2\2\2TU\3\2\2\2UW\3\2\2\2VT\3\2\2\2WX\7\6\2\2X"+
+		"\t\3\2\2\2YZ\t\2\2\2Z\13\3\2\2\2[\\\7\67\2\2\\\r\3\2\2\2]^\7\"\2\2^_\5"+
+		"\64\33\2_`\5\b\5\2`\17\3\2\2\2ab\7!\2\2bg\5\n\6\2cd\7\16\2\2df\5\n\6\2"+
+		"ec\3\2\2\2fi\3\2\2\2ge\3\2\2\2gh\3\2\2\2hm\3\2\2\2ig\3\2\2\2jk\7\r\2\2"+
+		"kl\7#\2\2ln\5(\25\2mj\3\2\2\2mn\3\2\2\2no\3\2\2\2op\7\17\2\2p\21\3\2\2"+
+		"\2qr\7\64\2\2r\23\3\2\2\2st\7\5\2\2tw\7\64\2\2uv\7\3\2\2vx\7\4\2\2wu\3"+
+		"\2\2\2wx\3\2\2\2xy\3\2\2\2yz\7\6\2\2z\25\3\2\2\2{|\5(\25\2|\27\3\2\2\2"+
+		"}\177\5\26\f\2~}\3\2\2\2~\177\3\2\2\2\177\u0084\3\2\2\2\u0080\u0081\7"+
+		"\16\2\2\u0081\u0083\5\26\f\2\u0082\u0080\3\2\2\2\u0083\u0086\3\2\2\2\u0084"+
+		"\u0082\3\2\2\2\u0084\u0085\3\2\2\2\u0085\31\3\2\2\2\u0086\u0084\3\2\2"+
+		"\2\u0087\u0088\5(\25\2\u0088\33\3\2\2\2\u0089\u008b\5\32\16\2\u008a\u0089"+
+		"\3\2\2\2\u008a\u008b\3\2\2\2\u008b\u0090\3\2\2\2\u008c\u008d\7\16\2\2"+
+		"\u008d\u008f\5\32\16\2\u008e\u008c\3\2\2\2\u008f\u0092\3\2\2\2\u0090\u008e"+
+		"\3\2\2\2\u0090\u0091\3\2\2\2\u0091\35\3\2\2\2\u0092\u0090\3\2\2\2\u0093"+
+		"\u0094\7\64\2\2\u0094\37\3\2\2\2\u0095\u0097\5\36\20\2\u0096\u0095\3\2"+
+		"\2\2\u0096\u0097\3\2\2\2\u0097\u009c\3\2\2\2\u0098\u0099\7\16\2\2\u0099"+
+		"\u009b\5\36\20\2\u009a\u0098\3\2\2\2\u009b\u009e\3\2\2\2\u009c\u009a\3"+
+		"\2\2\2\u009c\u009d\3\2\2\2\u009d!\3\2\2\2\u009e\u009c\3\2\2\2\u009f\u00a0"+
+		"\7.\2\2\u00a0\u00a1\7\64\2\2\u00a1\u00a2\7\7\2\2\u00a2\u00a3\5 \21\2\u00a3"+
+		"\u00a4\7\b\2\2\u00a4\u00a5\7\5\2\2\u00a5\u00a6\7/\2\2\u00a6\u00a7\5(\25"+
+		"\2\u00a7\u00a8\7\17\2\2\u00a8\u00a9\7\6\2\2\u00a9#\3\2\2\2\u00aa\u00ab"+
+		"\7\f\2\2\u00ab\u00b1\5&\24\2\u00ac\u00ad\7\n\2\2\u00ad\u00ae\5(\25\2\u00ae"+
+		"\u00af\7\13\2\2\u00af\u00b1\3\2\2\2\u00b0\u00aa\3\2\2\2\u00b0\u00ac\3"+
+		"\2\2\2\u00b1%\3\2\2\2\u00b2\u00b3\t\3\2\2\u00b3\'\3\2\2\2\u00b4\u00b5"+
+		"\b\25\1\2\u00b5\u00cf\7\60\2\2\u00b6\u00b8\7\n\2\2\u00b7\u00b9\5(\25\2"+
+		"\u00b8\u00b7\3\2\2\2\u00b8\u00b9\3\2\2\2\u00b9\u00be\3\2\2\2\u00ba\u00bb"+
+		"\7\16\2\2\u00bb\u00bd\5(\25\2\u00bc\u00ba\3\2\2\2\u00bd\u00c0\3\2\2\2"+
+		"\u00be\u00bc\3\2\2\2\u00be\u00bf\3\2\2\2\u00bf\u00c1\3\2\2\2\u00c0\u00be"+
+		"\3\2\2\2\u00c1\u00cf\7\13\2\2\u00c2\u00c3\t\4\2\2\u00c3\u00cf\5(\25\n"+
+		"\u00c4\u00cf\7\63\2\2\u00c5\u00cf\7\62\2\2\u00c6\u00cf\t\5\2\2\u00c7\u00cf"+
+		"\7\64\2\2\u00c8\u00cf\5\60\31\2\u00c9\u00cf\5\62\32\2\u00ca\u00cb\7\7"+
+		"\2\2\u00cb\u00cc\5(\25\2\u00cc\u00cd\7\b\2\2\u00cd\u00cf\3\2\2\2\u00ce"+
+		"\u00b4\3\2\2\2\u00ce\u00b6\3\2\2\2\u00ce\u00c2\3\2\2\2\u00ce\u00c4\3\2"+
+		"\2\2\u00ce\u00c5\3\2\2\2\u00ce\u00c6\3\2\2\2\u00ce\u00c7\3\2\2\2\u00ce"+
+		"\u00c8\3\2\2\2\u00ce\u00c9\3\2\2\2\u00ce\u00ca\3\2\2\2\u00cf\u00f4\3\2"+
+		"\2\2\u00d0\u00d1\f\23\2\2\u00d1\u00d2\t\6\2\2\u00d2\u00f3\5(\25\24\u00d3"+
+		"\u00d4\f\22\2\2\u00d4\u00d5\t\7\2\2\u00d5\u00f3\5(\25\23\u00d6\u00d7\f"+
+		"\21\2\2\u00d7\u00d8\t\b\2\2\u00d8\u00f3\5(\25\22\u00d9\u00da\f\20\2\2"+
+		"\u00da\u00db\t\t\2\2\u00db\u00f3\5(\25\21\u00dc\u00dd\f\17\2\2\u00dd\u00de"+
+		"\7 \2\2\u00de\u00f3\5(\25\20\u00df\u00e0\f\16\2\2\u00e0\u00e1\7\f\2\2"+
+		"\u00e1\u00f3\5&\24\2\u00e2\u00e3\f\r\2\2\u00e3\u00e4\7\f\2\2\u00e4\u00e5"+
+		"\5&\24\2\u00e5\u00e6\7\7\2\2\u00e6\u00e7\5\34\17\2\u00e7\u00e8\7\b\2\2"+
+		"\u00e8\u00f3\3\2\2\2\u00e9\u00ea\f\f\2\2\u00ea\u00eb\7\n\2\2\u00eb\u00ee"+
+		"\5(\25\2\u00ec\u00ed\7\r\2\2\u00ed\u00ef\5(\25\2\u00ee\u00ec\3\2\2\2\u00ee"+
+		"\u00ef\3\2\2\2\u00ef\u00f0\3\2\2\2\u00f0\u00f1\7\13\2\2\u00f1\u00f3\3"+
+		"\2\2\2\u00f2\u00d0\3\2\2\2\u00f2\u00d3\3\2\2\2\u00f2\u00d6\3\2\2\2\u00f2"+
+		"\u00d9\3\2\2\2\u00f2\u00dc\3\2\2\2\u00f2\u00df\3\2\2\2\u00f2\u00e2\3\2"+
+		"\2\2\u00f2\u00e9\3\2\2\2\u00f3\u00f6\3\2\2\2\u00f4\u00f2\3\2\2\2\u00f4"+
+		"\u00f5\3\2\2\2\u00f5)\3\2\2\2\u00f6\u00f4\3\2\2\2\u00f7\u00f8\7\64\2\2"+
+		"\u00f8+\3\2\2\2\u00f9\u00fa\7\t\2\2\u00fa\u00fb\5(\25\2\u00fb\u00fc\7"+
+		"\b\2\2\u00fc-\3\2\2\2\u00fd\u0100\7\65\2\2\u00fe\u0101\5\22\n\2\u00ff"+
+		"\u0101\5,\27\2\u0100\u00fe\3\2\2\2\u0100\u00ff\3\2\2\2\u0101\u0103\3\2"+
+		"\2\2\u0102\u00fd\3\2\2\2\u0103\u0104\3\2\2\2\u0104\u0102\3\2\2\2\u0104"+
+		"\u0105\3\2\2\2\u0105/\3\2\2\2\u0106\u0107\t\n\2\2\u0107\u0108\7\7\2\2"+
+		"\u0108\u0109\5.\30\2\u0109\u010a\7\b\2\2\u010a\61\3\2\2\2\u010b\u010c"+
+		"\7\64\2\2\u010c\u010d\7\7\2\2\u010d\u010e\5\30\r\2\u010e\u010f\7\b\2\2"+
+		"\u010f\63\3\2\2\2\u0110\u0113\7\65\2\2\u0111\u0114\7\64\2\2\u0112\u0114"+
+		"\5\24\13\2\u0113\u0111\3\2\2\2\u0113\u0112\3\2\2\2\u0114\u0116\3\2\2\2"+
+		"\u0115\u0110\3\2\2\2\u0116\u0117\3\2\2\2\u0117\u0115\3\2\2\2\u0117\u0118"+
+		"\3\2\2\2\u0118\65\3\2\2\2\33?FHRTgmw~\u0084\u008a\u0090\u0096\u009c\u00b0"+
+		"\u00b8\u00be\u00ce\u00ee\u00f2\u00f4\u0100\u0104\u0113\u0117";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

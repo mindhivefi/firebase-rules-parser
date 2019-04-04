@@ -299,6 +299,15 @@ FirebaseRulesListener.prototype.exitGetExpression = function(ctx) {
 };
 
 
+// Enter a parse tree produced by FirebaseRulesParser#inExpression.
+FirebaseRulesListener.prototype.enterInExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by FirebaseRulesParser#inExpression.
+FirebaseRulesListener.prototype.exitInExpression = function(ctx) {
+};
+
+
 // Enter a parse tree produced by FirebaseRulesParser#stringExpression.
 FirebaseRulesListener.prototype.enterStringExpression = function(ctx) {
 };

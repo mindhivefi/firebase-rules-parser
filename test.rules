@@ -1,7 +1,7 @@
 service cloud.firestore {
   match /databases/{database}/documents {
     match /organizations/{doc} {
-      allow read: if [1, 2, 3] == 'Joy';     
+      allow read: if 2 in [1, 2];
     }
   }
 }

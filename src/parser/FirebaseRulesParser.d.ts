@@ -316,6 +316,12 @@ export declare class GetExpressionContext extends ParserRuleContext {
     
 }
 
+export declare class InExpressionContext extends ParserRuleContext {
+    
+    public InOperator(): TerminalNode;
+    
+}
+
 export declare class StringExpressionContext extends ParserRuleContext {
     
     public String(): TerminalNode;

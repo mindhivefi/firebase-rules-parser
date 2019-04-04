@@ -19,7 +19,7 @@
     "commit": "npx git-cz",
     "copy-parser-files": "cpx ./src/parser/**/*.* ./lib/parser/",
     "check-package": "tar tvf $(npm pack)",
-    "generate": "antlr4-tool -o ./src/parser ./src/FirebaseRules.g4 && yarn lint && yarn build"
+    "generate": "antlr4-tool --no-visitor -o ./src/parser ./src/FirebaseRules.g4 && yarn lint && yarn build"
   },
   "repository": {
     "type": "git",
