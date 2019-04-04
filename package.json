@@ -1,6 +1,6 @@
 {
   "name": "firebase-rules-parser",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Parser for Firebase rule files",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
