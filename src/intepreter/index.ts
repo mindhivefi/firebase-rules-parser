@@ -894,17 +894,6 @@ class FirebaseRulesIntepreter extends FirebaseRulesListener {
     };
 
     this.push(fieldRefItem);
-
-    // switch (item.type) {
-    //   case StackItemType.OBJECT_REFERENCE:
-    //     item.obj.push(fieldName);
-    //     break;
-    //   case StackItemType.FUNCTION_CALL:
-    //     item.item.obj.fieldRefs.push(fieldName);
-    //     break;
-    //   default:
-    //     throwError(`Unidentified case for field reference ${item.type}`, ctx);
-    // }
   }
 
   public exitFieldReferenceWithMemberRef = (ctx: FieldReferenceWithMemberRefContext) => {
