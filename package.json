@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Parser for Firebase rule files",
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "types": "lib/index.d.ts",
   "scripts": {
     "start": "yarn build && node lib/index.js",
     "clean": "rimraf -f -r -d lib",

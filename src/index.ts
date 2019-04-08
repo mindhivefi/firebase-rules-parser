@@ -26,4 +26,10 @@ export function parseFirebaseRulesFromString(rules: string): FirebaseRulesParser
 
 import FirebaseRulesIntepreterFacade from './intepreter/';
 
+export { createFirebaseRulesContext } from './intepreter';
+export * from './intepreter/MockFirestoreRequest';
+export * from './intepreter/MockFirestoreResource';
+export * from './intepreter/FirebasePathAccessRights';
+export * from './intepreter/FirebaseRulesContext';
+
 export default () => new FirebaseRulesIntepreterFacade();
