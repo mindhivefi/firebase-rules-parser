@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/mindhivefi/firebase-rules-parser/compare/v1.0.2...v2.0.0) (2019-04-08)
+
+
+### Features
+
+* firebaseRulesIntepreterFacade-renamed-to-firebaseRulesIntepreter ([79e356f](https://github.com/mindhivefi/firebase-rules-parser/commit/79e356f))
+
+
+### BREAKING CHANGES
+
+* FirebaseRulesIntepreterFacade is renamed to FirebaseRulesIntepreter.
+
 ## [1.0.2](https://github.com/mindhivefi/firebase-rules-parser/compare/v1.0.1...v1.0.2) (2019-04-08)
 
 
