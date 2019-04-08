@@ -2,7 +2,7 @@
 
 Firebase rule parser parsers Firebase rule language files and emulates rules to check the access for different paths. Current version supports nearly all functionality of the rules language, except duaration, latlong and timestamp functions.
 
-This project is a side projet of [ts-mock-firebase](https://github.com/mindhivefi/ts-mock-firebase#readme), which is a mocking library for to do professional unit testing with Firebase projects. Still this librarary can also be used individually.
+This project is a side project of [ts-mock-firebase](https://github.com/mindhivefi/ts-mock-firebase#readme), which is a mocking library for professional unit testing with Firebase projects. Even so, it is also possible to use this librarary individually.
 
 ## Getting started
 
@@ -26,11 +26,11 @@ const rules = createFirebaseRulesIntepreter();
 // load your rules 
 rules.init(source);
 ```
-Here source is a string containing rules file content. Init will automatically parse its content. After init, rules are ready to be used.
+Above, the source parameter is a string containing rules -file content. `Init` -method call, will automatically parse its content and if no parsing succeeds with no errors, rules are ready to be tested.
 
 ### Checking access for a path
 
-To check access for some path, you need to set up the case for intepreter. Firebase rules needs a path -string and request and resource -objects to be set up for.
+To check access for some path, you need to set up the case for the rule intepreter. Firebase rules are always tested against same path. So you need to define the path to resource what are you testing against. The path must be given in a full path form starting with `/databases/DEFAULT/documents/my-collection/my-doc/my-subcollection/doc-here` -form. In addition, you need to define the authentication state and the actual resource been accessed with the context object.
 
 ```typescript
 
@@ -68,7 +68,7 @@ const context = createFirebaseRulesContext({
 const hasAccess = rules.hasAccess('/databases/DEFAULT/documents/users/123', context);
 ```
 
-´hasAccess´ -merhod will return an object which contains all access right keys that were defined in rules script. If there were no allow -rule to set access to true or false, no key will be included in object. So for example, the result could something like this:
+´hasAccess´ -method will return an object which contains all access right keys that were defined in rules script. If there were no allow -rule to set access to true or false, no key will be included in object. So for example, the result could something like this:
 
 ```typescript
 {
