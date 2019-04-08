@@ -1,4 +1,4 @@
-import RulesParser, { createFirebaseRulesContext } from '..';
+import { createFirebaseRulesContext, FirebaseRulesIntepreter } from '..';
 
 describe('Firebase Rules', () => {
   describe('Path matching', () => {
@@ -11,7 +11,7 @@ describe('Firebase Rules', () => {
     }`;
 
     it('Will give ', () => {
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(
         rules.hasAccess('/databases/DEFAULT/documents/organizations/mindhive', {
@@ -47,85 +47,85 @@ describe('Firebase Rules', () => {
 
     describe('Comparization Rules', () => {
       it('Will support greater than (>)', () => {
-        const rules = new RulesParser().init(ruleFile(5, '>', 2));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(5, '>', 2));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will support greater or equal than (>=)', () => {
-        const rules = new RulesParser().init(ruleFile(5, '>=', 5));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(5, '>=', 5));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will support less or equal than (<=)', () => {
-        const rules = new RulesParser().init(ruleFile(5, '<=', 3));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(5, '<=', 3));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(false));
       });
       it('Will support less than (<)', () => {
-        const rules = new RulesParser().init(ruleFile(3, '<', 4));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(3, '<', 4));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will support equality (==)', () => {
-        const rules = new RulesParser().init(ruleFile(3, '==', 3));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(3, '==', 3));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
 
       it('Will support inequality (!=)', () => {
-        const rules = new RulesParser().init(ruleFile(3, '!=', 2));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile(3, '!=', 2));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
     });
     describe('Parenthesis', () => {
       it('Will support parenthesis, (2 + 3) == 5', () => {
-        const rules = new RulesParser().init(ruleFile('(2 + 3)', '==', 5));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(2 + 3)', '==', 5));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
 
       it('Will support recuresive parenthesis resolvling, (2 + (4 * 3)) == 14', () => {
-        const rules = new RulesParser().init(ruleFile('(2 + (4 * 3))', '==', 14));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(2 + (4 * 3))', '==', 14));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
     });
 
     describe('Arithmetics', () => {
       it('Will do addition, (5 + 2) == 7', () => {
-        const rules = new RulesParser().init(ruleFile('(5 + 2)', '==', 7));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(5 + 2)', '==', 7));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will do subtraction, (3 - 2) == 1', () => {
-        const rules = new RulesParser().init(ruleFile('(3 - 2)', '==', 1));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(3 - 2)', '==', 1));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will do multipication, (3 * 2) == 6', () => {
-        const rules = new RulesParser().init(ruleFile('(3 * 2)', '==', 6));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(3 * 2)', '==', 6));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will do division, (4 / 2) == 2', () => {
-        const rules = new RulesParser().init(ruleFile('(4 / 2)', '==', 2));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(4 / 2)', '==', 2));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
     });
 
     describe('Logical operations', () => {
       it('Will support logical or, (5 == 2) || true', () => {
-        const rules = new RulesParser().init(ruleFile('(5 == 2)', '||', true));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(5 == 2)', '||', true));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will support logical and, (5 == 2) && true', () => {
-        const rules = new RulesParser().init(ruleFile('(5 == 2)', '&&', true));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(5 == 2)', '&&', true));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(false));
       });
 
       it('Will support logical operations withour parenthesis, 5 == 2 || true', () => {
-        const rules = new RulesParser().init(ruleFile('5 == 2', '||', true));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('5 == 2', '||', true));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
     });
 
     describe('Unary operations', () => {
       it('Will support negation, (10+(-5)) == 5', () => {
-        const rules = new RulesParser().init(ruleFile('(10+(-5))', '==', 5));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('(10+(-5))', '==', 5));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
       it('Will support exclusion, !true == false', () => {
-        const rules = new RulesParser().init(ruleFile('!true', '==', false));
+        const rules = new FirebaseRulesIntepreter().init(ruleFile('!true', '==', false));
         expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual(result(true));
       });
     });
@@ -145,7 +145,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });
@@ -164,7 +164,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });
@@ -182,7 +182,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });
@@ -198,7 +198,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       rules.request.auth.uid = 'ABC';
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
@@ -215,7 +215,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       rules.request.auth.uid = 'ABC';
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
@@ -231,7 +231,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       rules.request.auth.uid = '';
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
@@ -248,7 +248,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });
@@ -280,7 +280,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       rules.resource.data = {
         list: ['Happy', 'Joy'],
       };
@@ -299,7 +299,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       rules.resource.data = {
         list: [1, 2],
       };
@@ -318,7 +318,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
       expect(rules.hasAccess(path, createFirebaseRulesContext())).toEqual({
         read: true,
       });
@@ -339,7 +339,7 @@ describe('Firebase Rules', () => {
 
       context.onExistsCall = () => true;
 
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       rules.request.auth.uid = '123';
 
@@ -366,7 +366,7 @@ describe('Firebase Rules', () => {
         },
         id: '123',
       });
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       rules.request.auth.uid = '123';
       rules.resource.data = {
@@ -399,7 +399,7 @@ describe('Firebase Rules', () => {
         },
         id: '123',
       });
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       rules.request.auth.uid = '123';
       rules.resource.data = {
@@ -423,7 +423,7 @@ describe('Firebase Rules', () => {
     }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
       const context = createFirebaseRulesContext();
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(rules.hasAccess(path, context)).toEqual({
         read: true,
@@ -440,7 +440,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
       const context = createFirebaseRulesContext();
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(rules.hasAccess(path, context)).toEqual({
         read: true,
@@ -457,7 +457,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
       const context = createFirebaseRulesContext();
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(rules.hasAccess(path, context)).toEqual({
         read: true,
@@ -474,7 +474,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
       const context = createFirebaseRulesContext();
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(rules.hasAccess(path, context)).toEqual({
         read: true,
@@ -491,7 +491,7 @@ describe('Firebase Rules', () => {
       }`;
       const path = '/databases/DEFAULT/documents/organizations/mindhive';
       const context = createFirebaseRulesContext();
-      const rules = new RulesParser().init(ruleFile);
+      const rules = new FirebaseRulesIntepreter().init(ruleFile);
 
       expect(rules.hasAccess(path, context)).toEqual({
         read: true,

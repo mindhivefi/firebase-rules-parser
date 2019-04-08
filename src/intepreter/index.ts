@@ -186,8 +186,8 @@ export function createFirebaseRulesContext(
 /**
  * Firebase Rules Intepreter testing user rights based on rules script
  */
-export default class FirebaseRulesIntepreterFacade {
-  private _parser: FirebaseRulesIntepreter;
+export class FirebaseRulesIntepreter {
+  private _parser: _FirebaseRulesIntepreter;
 
   public get request(): MockFirestoreRequest {
     return this._parser.request;
@@ -214,10 +214,10 @@ export default class FirebaseRulesIntepreterFacade {
   }
 
   constructor() {
-    this._parser = new FirebaseRulesIntepreter();
+    this._parser = new _FirebaseRulesIntepreter();
   }
 
-  public init = (rulesFile: string): FirebaseRulesIntepreterFacade => {
+  public init = (rulesFile: string): FirebaseRulesIntepreter => {
     this._parser.init(rulesFile);
     return this;
   }
@@ -232,7 +232,7 @@ export default class FirebaseRulesIntepreterFacade {
   }
 }
 
-class FirebaseRulesIntepreter extends FirebaseRulesListener {
+class _FirebaseRulesIntepreter extends FirebaseRulesListener {
   public get request(): MockFirestoreRequest {
     return this._request;
   }
@@ -275,7 +275,7 @@ class FirebaseRulesIntepreter extends FirebaseRulesListener {
     this.initGlobalClosure();
   }
 
-  public init = (rulesFile: string): FirebaseRulesIntepreter => {
+  public init = (rulesFile: string): _FirebaseRulesIntepreter => {
     this._stack = [];
 
     this._parser = parseFirebaseRulesFromString(rulesFile);
