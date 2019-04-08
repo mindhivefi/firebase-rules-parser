@@ -1,3 +1,12 @@
+## [1.0.1](https://github.com/mindhivefi/firebase-rules-parser/compare/v1.0.0...v1.0.1) (2019-04-08)
+
+
+### Bug Fixes
+
+* general-class-exports ([cd1cff5](https://github.com/mindhivefi/firebase-rules-parser/commit/cd1cff5))
+* general-class-exports ([18eaedd](https://github.com/mindhivefi/firebase-rules-parser/commit/18eaedd))
+* general-class-exports ([829e618](https://github.com/mindhivefi/firebase-rules-parser/commit/829e618))
+
 # 1.0.0 (2019-04-04)
 
 
