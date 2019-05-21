@@ -1,5 +1,7 @@
 # firebase-rules-parser
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mindhivefi/firebase-rules-parser.svg)](https://greenkeeper.io/)
+
 Firebase rule parser parsers Firebase rule language files and emulates rules to check the access for different paths. Current version supports nearly all functionality of the rules language, except duaration, latlong and timestamp functions.
 
 This project is a side project of [ts-mock-firebase](https://github.com/mindhivefi/ts-mock-firebase#readme), which is a mocking library for professional unit testing with Firebase projects. Even so, it is also possible to use this librarary individually.
