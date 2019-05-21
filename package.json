@@ -59,9 +59,6 @@
     "url": "https://github.com/mindhivefi/firebase-rules-parser/issues"
   },
   "homepage": "https://github.com/mindhivefi/firebase-rules-parser#readme",
-  "peerDependencies": {
-    "antlr4": "4.7.2"
-  },
   "devDependencies": {
     "@commitlint/cli": "7.5.2",
     "@commitlint/config-conventional": "7.5.0",
@@ -100,6 +97,7 @@
     "lib/**/*"
   ],
   "dependencies": {
+    "antlr4": "4.7.2",
     "deepmerge": "3.2.0"
   }
 }
