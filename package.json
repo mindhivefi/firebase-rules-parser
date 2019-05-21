@@ -63,26 +63,26 @@
     "antlr4": "4.7.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "7.5.2",
-    "@commitlint/config-conventional": "7.5.0",
+    "@commitlint/cli": "7.6.1",
+    "@commitlint/config-conventional": "7.6.0",
     "@semantic-release/changelog": "3.0.2",
     "@semantic-release/git": "7.0.8",
-    "@semantic-release/npm": "5.1.4",
+    "@semantic-release/npm": "5.1.7",
     "@types/antlr4": "4.7.0",
-    "@types/jest": "24.0.11",
+    "@types/jest": "24.0.13",
     "antlr4-tool": "1.0.26",
-    "commitizen": "3.0.7",
+    "commitizen": "3.1.1",
     "condition-circle": "2.0.2",
     "cpx": "1.5.0",
     "husky": "1.3.1",
-    "jest": "24.7.1",
+    "jest": "24.8.0",
     "rimraf": "2.6.3",
     "semantic-release": "15.13.3",
     "ts-jest": "24.0.2",
-    "tslint": "5.15.0",
+    "tslint": "5.16.0",
     "tslint-config-prettier": "1.18.0",
     "tslint-sonarts": "1.9.0",
-    "typescript": "3.4.2"
+    "typescript": "3.4.5"
   },
   "config": {
     "commitizen": {
