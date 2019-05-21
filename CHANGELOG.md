@@ -1,3 +1,11 @@
+## [2.0.1](https://github.com/mindhivefi/firebase-rules-parser/compare/v2.0.0...v2.0.1) (2019-05-21)
+
+
+### Bug Fixes
+
+* Changes to package dependencies ([224dd57](https://github.com/mindhivefi/firebase-rules-parser/commit/224dd57))
+* Changes to package dependencies ([4fd4d3c](https://github.com/mindhivefi/firebase-rules-parser/commit/4fd4d3c))
+
 # [2.0.0](https://github.com/mindhivefi/firebase-rules-parser/compare/v1.0.2...v2.0.0) (2019-04-08)
 
 
