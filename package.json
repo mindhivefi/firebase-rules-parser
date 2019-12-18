@@ -66,7 +66,7 @@
     "@semantic-release/git": "7.0.8",
     "@semantic-release/npm": "5.1.7",
     "@types/antlr4": "4.7.0",
-    "@types/jest": "24.0.13",
+    "@types/jest": "24.0.24",
     "antlr4-tool": "1.0.26",
     "commitizen": "3.1.1",
     "condition-circle": "2.0.2",
