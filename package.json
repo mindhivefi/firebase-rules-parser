@@ -68,7 +68,7 @@
     "@types/antlr4": "4.7.0",
     "@types/jest": "24.0.13",
     "antlr4-tool": "1.0.26",
-    "commitizen": "3.1.1",
+    "commitizen": "4.0.5",
     "condition-circle": "2.0.2",
     "cpx": "1.5.0",
     "husky": "1.3.1",
